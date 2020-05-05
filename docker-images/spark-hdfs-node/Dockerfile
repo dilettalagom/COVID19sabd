@@ -1,10 +1,12 @@
 FROM effeerre/hadoop
 USER root
 
+RUN apt-get update;
+
 # copy HDFS local configuratio in spark_hdfs_container
-ADD hdfs-configuration/core.xml $HADOOP_HOME/etc/hadoop/core-site.xml
-ADD hdfs-configuration/workers_names $HADOOP_HOME/etc/hadoop/workers
-#ADD hdfs-config/hadoop-env.sh $HADOOP_HOME/etc/hadoop/hadoop-env.sh -> java-activation ??
+ADD hdfs-configuration/hadoop-env.sh $HADOOP_CONF_DIR/hadoop-env.sh
+ADD hdfs-configuration/core.xml $HADOOP_CONF_DIR/core-site.xml
+ADD hdfs-configuration/workers_names $HADOOP_CONF_DIR/workers
 #ADD hdfs_configuration/hdfs.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml -> per permessi super-root/replicazione (rischiosi?)
 #ADD hdfs-config/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml -> per yarn (sostituire misos ?)
 
