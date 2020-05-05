@@ -1,9 +1,8 @@
-#!/bin/bash
 hdfs namenode -format
 $HADOOP_HOME/sbin/start-dfs.sh
 #$SPARK_HOME/sbin/start-all.sh
 
-sleep 30
+#sleep 30
 
 #hdfs dfs -chmod -R 777 /
 #hdfs dfs -mkdir /spark-events

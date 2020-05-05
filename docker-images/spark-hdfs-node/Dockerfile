@@ -25,16 +25,17 @@ ADD hdfs-configuration/workers_names $HADOOP_CONF_DIR/workers
 
 #create main directory
 RUN mkdir /target
+ADD start-services.sh /target/start-services.sh
 WORKDIR /target
 
 #external linking
 VOLUME /target/project-jar
 
 #TODO
-ADD create-services.sh /target
-RUN chmod 700 /target/create-services.sh
-ADD destroy-services.sh /target
-#RUN chmod 700 /target/destroy-services.sh
+ADD start-services.sh /target
+RUN chmod 700 /target/start-services.sh
+ADD stop-services.sh /target
+#RUN chmod 700 /target/stop-services.sh
 
 # HDFS ports: slave 3-2-1 + master
 EXPOSE 9861 9862 9863 9870

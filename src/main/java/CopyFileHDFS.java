@@ -11,7 +11,7 @@ import java.net.URI;
 public class CopyFileHDFS {
     public static void main(String[] args) {
 
-        Path pt = new Path("./prova.txt");
+       /* Path pt = new Path("./prova.txt");
         try {
             Configuration configuration = new Configuration();
             configuration.set("fs.default.name","hdfs://master:54310");
@@ -34,7 +34,8 @@ public class CopyFileHDFS {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
+       System.out.println("Sono svegliooo");
 
     }
 }
