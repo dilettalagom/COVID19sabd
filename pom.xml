@@ -23,7 +23,7 @@
                         </goals>
 
                         <configuration>
-                            <outputDirectory>${basedir}/docker-compose/spark_jar</outputDirectory>
+                            <outputDirectory>${basedir}/docker-compose/target-jar</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target/jar</directory>

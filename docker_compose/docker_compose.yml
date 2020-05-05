@@ -1,0 +1,74 @@
+version: "2"
+
+networks:
+  app_network:
+    driver: bridge
+
+services:
+  master:
+
+    build:
+      context: ../docker_images/spark_hdfs_node
+    image: dilettalagom/spark-hdfs-node
+    container_name: master
+    hostname: master
+    networks:
+      - app_network
+    ports:
+      - "9870:9870" # hdfs ui
+      - "54310:54310" # hdfs
+      - "43211:43211" #remote intellij degugging
+      - "18080:18080" #spark history ui
+    volumes:
+      - ./target-jar:/target/project_jar
+    stdin_open: true
+    tty: true
+    environment:
+      - ISMASTER=1
+
+  worker1:
+    image: dilettalagom/spark-hdfs-node
+    container_name: worker1
+    hostname: worker1
+    networks:
+      - app_network
+    ports:
+      - "9861:9861"
+    depends_on:
+      - master
+    stdin_open: true
+    tty: true
+    environment:
+      - ISMASTER=0
+
+
+  worker2:
+    image: dilettalagom/spark-hdfs-node
+    container_name: worker2
+    hostname: worker2
+    networks:
+      - app_network
+    ports:
+      - "9862:9861"
+    depends_on:
+      - master
+    stdin_open: true
+    tty: true
+    environment:
+      - ISMASTER=0
+
+
+  worker3:
+    image: dilettalagom/spark-hdfs-node
+    container_name: worker3
+    hostname: worker3
+    networks:
+      - app_network
+    ports:
+      - "9863:9861"
+    depends_on:
+      - master
+    stdin_open: true
+    tty: true
+    environment:
+      - ISMASTER=0

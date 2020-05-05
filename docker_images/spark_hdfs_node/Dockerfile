@@ -1,41 +1,41 @@
 FROM effeerre/hadoop
 USER root
 
-# HDFS CONFIG FILES
-ADD hdfs-config/hadoop-env.sh $HADOOP_HOME/etc/hadoop/hadoop-env.sh
-ADD hdfs-config/core-site.xml $HADOOP_HOME/etc/hadoop/core-site.xml
-ADD hdfs-config/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml
-ADD hdfs-config/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml
-ADD hdfs-config/workers $HADOOP_HOME/etc/hadoop/workers
+# copy HDFS local configuratio in spark_hdfs_container
+ADD hdfs_configuration/core.xml $HADOOP_HOME/etc/hadoop/core-site.xml
+ADD hdfs_configuration/workers_names $HADOOP_HOME/etc/hadoop/workers
+#ADD hdfs-config/hadoop-env.sh $HADOOP_HOME/etc/hadoop/hadoop-env.sh -> java-activation ??
+#ADD hdfs_configuration/hdfs.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml -> per permessi super-root/replicazione (rischiosi?)
+#ADD hdfs-config/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml -> per yarn (sostituire misos ?)
 
-# SPARK LIB FILES
-RUN wget http://it.apache.contactlab.it/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz; 
-RUN tar -zxf spark-2.4.3-bin-hadoop2.7.tgz -C /usr/local/ ; rm spark-2.4.3-bin-hadoop2.7.tgz
-RUN cd /usr/local && ln -s ./spark-2.4.3-bin-hadoop2.7 spark
-ENV SPARK_HOME /usr/local/spark
-ENV PATH $PATH:$SPARK_HOME/bin
-RUN mkdir $SPARK_HOME/yarn-remote-client
+##  install SPARK LIB in spark_hdfs_container
+#RUN wget http://it.apache.contactlab.it/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz;
+#RUN tar -zxf spark-2.4.3-bin-hadoop2.7.tgz -C /usr/local/ ; rm spark-2.4.3-bin-hadoop2.7.tgz
+#RUN cd /usr/local && ln -s ./spark-2.4.3-bin-hadoop2.7 spark
+#ENV SPARK_HOME /usr/local/spark
+#ENV PATH $PATH:$SPARK_HOME/bin
+#RUN mkdir $SPARK_HOME/yarn-remote-client
 
-# SPARK CONFIG FILES
-ADD spark-config/spark-env.sh $SPARK_HOME/conf
-ADD spark-config/spark-defaults.conf $SPARK_HOME/conf
-ADD spark-config/slaves $SPARK_HOME/conf
+## SPARK CONFIG FILES
+#ADD spark-config/spark-env.sh $SPARK_HOME/conf
+#ADD spark-config/spark-defaults.conf $SPARK_HOME/conf
+#ADD spark-config/slaves $SPARK_HOME/conf
 
-#create data directory
-RUN mkdir /data
-WORKDIR /data
+#create main directory
+RUN mkdir /target
+WORKDIR /target
 
-#volume esterno
-VOLUME /
+#external linking
+VOLUME /target/project_jar
 
 #TODO
-#ADD start-services.sh /sabd
-#RUN chmod 700 /sabd/start-services.sh
-#ADD stop-services.sh /sabd
-#RUN chmod 700 /sabd/stop-services.sh
+ADD create-services.sh /target
+RUN chmod 700 /target/start-services.sh
+ADD destroy-services.sh /target
+#RUN chmod 700 /target/stop-services.sh
 
 # HDFS ports: slave 3-2-1 + master
-EXPOSE 9863 9862 9861 9870
+EXPOSE 9861 9862 9863 9870
 
 # Spark remote debugging for intellij
 EXPOSE 43211
