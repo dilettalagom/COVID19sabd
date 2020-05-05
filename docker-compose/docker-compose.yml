@@ -8,7 +8,7 @@ services:
   master:
 
     build:
-      context: ../docker_images/spark_hdfs_node
+      context: ../docker-images/spark-hdfs-node
     image: dilettalagom/spark-hdfs-node
     container_name: master
     hostname: master
@@ -20,7 +20,7 @@ services:
       - "43211:43211" #remote intellij degugging
       - "18080:18080" #spark history ui
     volumes:
-      - ./target-jar:/target/project_jar
+      - ./target-jar:/target/project-jar
     stdin_open: true
     tty: true
     environment:

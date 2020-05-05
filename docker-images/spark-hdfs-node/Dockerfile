@@ -2,8 +2,8 @@ FROM effeerre/hadoop
 USER root
 
 # copy HDFS local configuratio in spark_hdfs_container
-ADD hdfs_configuration/core.xml $HADOOP_HOME/etc/hadoop/core-site.xml
-ADD hdfs_configuration/workers_names $HADOOP_HOME/etc/hadoop/workers
+ADD hdfs-configuration/core.xml $HADOOP_HOME/etc/hadoop/core-site.xml
+ADD hdfs-configuration/workers_names $HADOOP_HOME/etc/hadoop/workers
 #ADD hdfs-config/hadoop-env.sh $HADOOP_HOME/etc/hadoop/hadoop-env.sh -> java-activation ??
 #ADD hdfs_configuration/hdfs.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml -> per permessi super-root/replicazione (rischiosi?)
 #ADD hdfs-config/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml -> per yarn (sostituire misos ?)
@@ -26,13 +26,13 @@ RUN mkdir /target
 WORKDIR /target
 
 #external linking
-VOLUME /target/project_jar
+VOLUME /target/project-jar
 
 #TODO
 ADD create-services.sh /target
-RUN chmod 700 /target/start-services.sh
+RUN chmod 700 /target/create-services.sh
 ADD destroy-services.sh /target
-#RUN chmod 700 /target/stop-services.sh
+#RUN chmod 700 /target/destroy-services.sh
 
 # HDFS ports: slave 3-2-1 + master
 EXPOSE 9861 9862 9863 9870
