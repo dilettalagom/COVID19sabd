@@ -4,7 +4,7 @@ USER root
 RUN apt-get update;
 
 # copy HDFS local configuratio in spark_hdfs_container
-ADD hdfs-configuration/hadoop-env.sh $HADOOP_CONF_DIR/hadoop-env.sh
+#ADD hdfs-configuration/hadoop-env.sh $HADOOP_CONF_DIR/hadoop-env.sh
 ADD hdfs-configuration/core.xml $HADOOP_CONF_DIR/core-site.xml
 
 #config file for setting datanodes's names
@@ -34,7 +34,7 @@ RUN mkdir /target
 #external linking
 VOLUME /target
 
-ENV PATH $PATH:$SPARK_HOME/bin:$HADOOP_PREFIX/bin
+#ENV PATH $PATH:$SPARK_HOME/bin:$HADOOP_PREFIX/bin
 WORKDIR /target
 
 
