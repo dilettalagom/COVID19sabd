@@ -1,4 +1,4 @@
-FROM effeerre/hadoop
+FROM base
 USER root
 
 RUN apt-get update;
@@ -6,35 +6,38 @@ RUN apt-get update;
 # copy HDFS local configuratio in spark_hdfs_container
 ADD hdfs-configuration/hadoop-env.sh $HADOOP_CONF_DIR/hadoop-env.sh
 ADD hdfs-configuration/core.xml $HADOOP_CONF_DIR/core-site.xml
-ADD hdfs-configuration/workers_names $HADOOP_CONF_DIR/workers
-#ADD hdfs_configuration/hdfs.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml -> per permessi super-root/replicazione (rischiosi?)
+ADD hdfs-configuration/workers-names $HADOOP_CONF_DIR/workers
+ADD hdfs-configuration/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml
+#-> per permessi super-root/replicazione (rischiosi?)
 #ADD hdfs-config/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml -> per yarn (sostituire misos ?)
 
 ##  install SPARK LIB in spark_hdfs_container
-#RUN wget http://it.apache.contactlab.it/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz;
-#RUN tar -zxf spark-2.4.3-bin-hadoop2.7.tgz -C /usr/local/ ; rm spark-2.4.3-bin-hadoop2.7.tgz
-#RUN cd /usr/local && ln -s ./spark-2.4.3-bin-hadoop2.7 spark
+#RUN wget https://downloads.apache.org/spark/spark-2.4.5/spark-2.4.5-bin-hadoop2.7.tgz
+#RUN tar -zxf spark-2.4.5-bin-hadoop2.7.tgz -C /usr/local/ ; rm spark-2.4.5-bin-hadoop2.7.tgz
+#RUN cd /usr/local && ln -s ./spark-2.4.5-bin-hadoop2.7 spark
 #ENV SPARK_HOME /usr/local/spark
 #ENV PATH $PATH:$SPARK_HOME/bin
 #RUN mkdir $SPARK_HOME/yarn-remote-client
 
-## SPARK CONFIG FILES
-#ADD spark-config/spark-env.sh $SPARK_HOME/conf
-#ADD spark-config/spark-defaults.conf $SPARK_HOME/conf
-#ADD spark-config/slaves $SPARK_HOME/conf
+RUN chmod 777 $HADOOP_HDFS_HOME -R
+
+# SPARK CONFIG FILES
+ADD spark-configuration/spark-env.sh $SPARK_HOME/conf
+#ADD spark-configuration/spark-default.conf $SPARK_HOME/conf
+ADD spark-configuration/workers-names $SPARK_HOME/conf
 
 #create main directory
 RUN mkdir /target
-ADD start-services.sh /target/start-services.sh
+#ADD start-services.sh /target/start-services.sh
 WORKDIR /target
 
 #external linking
-VOLUME /target/project-jar
+VOLUME /target
 
 #TODO
-ADD start-services.sh /target
-RUN chmod 700 /target/start-services.sh
-ADD stop-services.sh /target
+#ADD start-services.sh /target
+#RUN chmod 700 /target/start-services.sh
+#ADD stop-services.sh /target
 #RUN chmod 700 /target/stop-services.sh
 
 # HDFS ports: slave 3-2-1 + master

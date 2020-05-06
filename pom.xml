@@ -23,7 +23,7 @@
                         </goals>
 
                         <configuration>
-                            <outputDirectory>${basedir}/docker-compose/target-jar</outputDirectory>
+                            <outputDirectory>docker-compose/target/jar</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target</directory>

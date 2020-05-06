@@ -20,11 +20,12 @@ services:
       - "43211:43211" #remote intellij degugging
       - "18080:18080" #spark history ui
     volumes:
-      - ./target-jar:/target/project-jar
+      - ./target:/target
     stdin_open: true
     tty: true
-    environment:
-      - ISMASTER=1
+    #command: bash
+    command: sh start-services.sh
+
 
   worker1:
     image: dilettalagom/spark-hdfs-node
@@ -38,9 +39,6 @@ services:
       - master
     stdin_open: true
     tty: true
-    environment:
-      - ISMASTER=0
-
 
   worker2:
     image: dilettalagom/spark-hdfs-node
@@ -54,8 +52,6 @@ services:
       - master
     stdin_open: true
     tty: true
-    environment:
-      - ISMASTER=0
 
 
   worker3:
@@ -70,5 +66,3 @@ services:
       - master
     stdin_open: true
     tty: true
-    environment:
-      - ISMASTER=0
