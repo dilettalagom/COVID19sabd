@@ -15,17 +15,16 @@ services:
     networks:
       - app_network
     ports:
-      - "9870:9870" # hdfs ui
-      - "54310:54310" # hdfs
+      - "9870:9870" # hdfs
+      - "54310:54310" # hdfs ui
       - "43211:43211" #remote intellij degugging
       - "18080:18080" #spark history ui
     volumes:
-      - ./target:/target
+      - ./target-master:/target
     stdin_open: true
     tty: true
-    #command: bash
-    command: sh start-services.sh
-
+    #command: bash -c "chmod 700 start-services-master.sh && sh start-services-master.sh"
+    command: sh start-services-master.sh
 
   worker1:
     image: dilettalagom/spark-hdfs-node
@@ -37,8 +36,11 @@ services:
       - "9861:9861"
     depends_on:
       - master
+    volumes:
+      - ./target-worker:/target
     stdin_open: true
     tty: true
+    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
 
   worker2:
     image: dilettalagom/spark-hdfs-node
@@ -50,9 +52,11 @@ services:
       - "9862:9861"
     depends_on:
       - master
+    volumes:
+      - ./target-worker:/target
     stdin_open: true
     tty: true
-
+    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
 
   worker3:
     image: dilettalagom/spark-hdfs-node
@@ -64,5 +68,8 @@ services:
       - "9863:9861"
     depends_on:
       - master
+    volumes:
+      - ./target-worker:/target
     stdin_open: true
     tty: true
+    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"

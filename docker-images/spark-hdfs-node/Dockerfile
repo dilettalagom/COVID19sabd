@@ -6,10 +6,15 @@ RUN apt-get update;
 # copy HDFS local configuratio in spark_hdfs_container
 ADD hdfs-configuration/hadoop-env.sh $HADOOP_CONF_DIR/hadoop-env.sh
 ADD hdfs-configuration/core.xml $HADOOP_CONF_DIR/core-site.xml
+
+#config file for setting datanodes's names
 ADD hdfs-configuration/workers-names $HADOOP_CONF_DIR/workers
-#ADD hdfs-configuration/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml
-#-> per permessi super-root/replicazione (rischiosi?)
-#ADD hdfs-config/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml -> per yarn (sostituire misos ?)
+
+#config file for deactivate privilege accesses
+ADD hdfs-configuration/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml
+
+#config file for master-worker interconnection TODO: misos
+ADD hdfs-configuration/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml
 
 #  install SPARK LIB in spark_hdfs_container
 RUN wget https://downloads.apache.org/spark/spark-2.4.5/spark-2.4.5-bin-hadoop2.7.tgz
@@ -32,12 +37,6 @@ VOLUME /target
 ENV PATH $PATH:$SPARK_HOME/bin:$HADOOP_PREFIX/bin
 WORKDIR /target
 
-
-#TODO
-#ADD start-services.sh /target
-#RUN chmod 700 /target/start-services.sh
-#ADD stop-services.sh /target
-#RUN chmod 700 /target/stop-services.sh
 
 # HDFS ports: slave 3-2-1 + master
 EXPOSE 9861 9862 9863 9870
