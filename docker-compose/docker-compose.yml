@@ -5,8 +5,8 @@ networks:
     driver: bridge
 
 services:
-  master:
 
+  master:
     build:
       context: ../docker-images/spark-hdfs-node
     image: dilettalagom/spark-hdfs-node
@@ -23,8 +23,8 @@ services:
       - ./target-master:/target
     stdin_open: true
     tty: true
-    #command: bash -c "chmod 700 start-services-master.sh && sh start-services-master.sh"
-    command: sh start-services-master.sh
+    command: bash -c "chmod 700 start-services-master.sh && sh start-services-master.sh"
+
 
   worker1:
     image: dilettalagom/spark-hdfs-node
@@ -73,3 +73,32 @@ services:
     stdin_open: true
     tty: true
     command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    hostname: zookeeper
+    networks:
+      - app_network
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  nifi:
+    build:
+      context: ../docker-images/nifi-node
+    image: dilettalagom/nifi
+    container_name: nifi
+    hostname: nifi
+    networks:
+      - app_network
+    volumes:
+      - ./nifi-configuration:/usr/local/nifi/conf/flow
+    ports:
+      - "4040:4040"
+      - "43212:43212"
+      - "43210:43210" #remote intellij degugging port
+
+    stdin_open: true
+    tty: true
