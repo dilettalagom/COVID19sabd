@@ -2,13 +2,16 @@ FROM ubuntu:18.04
 USER root
 
 RUN apt-get update
-RUN apt-get install -y wget openjdk-8-jre
+RUN apt-get install -y sudo wget openjdk-8-jre curl
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
 
-RUN wget https://mirror.nohup.it/apache/nifi/1.11.4/nifi-1.11.4-bin.tar.gz ; tar -zxf nifi-1.11.4-bin.tar.gz -C /usr/local/ ; rm nifi-1.11.4-bin.tar.gz
-RUN cd /usr/local && ln -s ./nifi-1.11.4 nifi
+#RUN wget https://mirror.nohup.it/apache/nifi/1.11.4/nifi-1.11.4-bin.tar.gz ; tar -zxf nifi-1.11.4-bin.tar.gz -C /usr/local/ ; rm nifi-1.11.4-bin.tar.gz
+ADD nifi-configuration/nifi-1.11.4-bin.tar.gz /usr/local/
+RUN tar -zxf nifi-1.11.4-bin.tar.gz -C /usr/local/ ; rm nifi-1.11.4-bin.tar.gz
+#RUN cd /usr/local && ln -s ./nifi-1.11.4 nifi
+ENV NIFI_RUNNER /usr/local/nifi-1.11.4
 ENV NIFI_HOME /usr/local/nifi
 #RUN cd $NIFI_HOME/conf;
 #RUN mv nifi.properties nifi.properties-old;

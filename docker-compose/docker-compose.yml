@@ -6,84 +6,84 @@ networks:
 
 services:
 
-  master:
-    build:
-      context: ../docker-images/spark-hdfs-node
-    image: dilettalagom/spark-hdfs-node
-    container_name: master
-    hostname: master
-    networks:
-      - app_network
-    ports:
-      - "9870:9870" # hdfs
-      - "54310:54310" # hdfs ui
-      - "43211:43211" #remote intellij degugging
-      - "18080:18080" #spark history ui
-    volumes:
-      - ./target-master:/target
-    stdin_open: true
-    tty: true
-    command: bash -c "chmod 700 start-services-master.sh && sh start-services-master.sh"
-
-
-  worker1:
-    image: dilettalagom/spark-hdfs-node
-    container_name: worker1
-    hostname: worker1
-    networks:
-      - app_network
-    ports:
-      - "9861:9861"
-    depends_on:
-      - master
-    volumes:
-      - ./target-worker:/target
-    stdin_open: true
-    tty: true
-    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
-
-  worker2:
-    image: dilettalagom/spark-hdfs-node
-    container_name: worker2
-    hostname: worker2
-    networks:
-      - app_network
-    ports:
-      - "9862:9861"
-    depends_on:
-      - master
-    volumes:
-      - ./target-worker:/target
-    stdin_open: true
-    tty: true
-    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
-
-  worker3:
-    image: dilettalagom/spark-hdfs-node
-    container_name: worker3
-    hostname: worker3
-    networks:
-      - app_network
-    ports:
-      - "9863:9861"
-    depends_on:
-      - master
-    volumes:
-      - ./target-worker:/target
-    stdin_open: true
-    tty: true
-    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
-
-  zookeeper:
-    image: wurstmeister/zookeeper
-    container_name: zookeeper
-    hostname: zookeeper
-    networks:
-      - app_network
-    ports:
-      - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+#  master:
+#    build:
+#      context: ../docker-images/spark-hdfs-node
+#    image: dilettalagom/spark-hdfs-node
+#    container_name: master
+#    hostname: master
+#    networks:
+#      - app_network
+#    ports:
+#      - "9870:9870" # hdfs
+#      - "54310:54310" # hdfs ui
+#      - "43211:43211" #remote intellij degugging
+#      - "18080:18080" #spark history ui
+#    volumes:
+#      - ./target-master:/target
+#    stdin_open: true
+#    tty: true
+#    command: bash -c "chmod 700 start-services-master.sh && sh start-services-master.sh"
+#
+#
+#  worker1:
+#    image: dilettalagom/spark-hdfs-node
+#    container_name: worker1
+#    hostname: worker1
+#    networks:
+#      - app_network
+#    ports:
+#      - "9861:9861"
+#    depends_on:
+#      - master
+#    volumes:
+#      - ./target-worker:/target
+#    stdin_open: true
+#    tty: true
+#    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
+#
+#  worker2:
+#    image: dilettalagom/spark-hdfs-node
+#    container_name: worker2
+#    hostname: worker2
+#    networks:
+#      - app_network
+#    ports:
+#      - "9862:9861"
+#    depends_on:
+#      - master
+#    volumes:
+#      - ./target-worker:/target
+#    stdin_open: true
+#    tty: true
+#    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
+#
+#  worker3:
+#    image: dilettalagom/spark-hdfs-node
+#    container_name: worker3
+#    hostname: worker3
+#    networks:
+#      - app_network
+#    ports:
+#      - "9863:9861"
+#    depends_on:
+#      - master
+#    volumes:
+#      - ./target-worker:/target
+#    stdin_open: true
+#    tty: true
+#    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
+#
+#  zookeeper:
+#    image: wurstmeister/zookeeper
+#    container_name: zookeeper
+#    hostname: zookeeper
+#    networks:
+#      - app_network
+#    ports:
+#      - '2181:2181'
+#    environment:
+#      - ALLOW_ANONYMOUS_LOGIN=yes
 
   nifi:
     build:
