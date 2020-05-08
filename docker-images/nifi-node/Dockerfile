@@ -9,6 +9,7 @@ ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
 #RUN wget https://mirror.nohup.it/apache/nifi/1.11.4/nifi-1.11.4-bin.tar.gz ; tar -zxf nifi-1.11.4-bin.tar.gz -C /usr/local/ ; rm nifi-1.11.4-bin.tar.gz
 ADD nifi-configuration/nifi-1.11.4-bin.tar.gz /usr/local/
+ADD nifi-configuration/start-services.sh /usr/local/
 ENV NIFI_HOME /usr/local/nifi-1.11.4
 ENV NIFI_DIR /usr/local/nifi
 ##RUN cd $NIFI_HOME/conf;
@@ -37,11 +38,9 @@ WORKDIR /dataset
 RUN wget $URL_DATASET_ITA; mv dpc-covid19-ita-andamento-nazionale.csv /dataset/covid19_national.csv;
 RUN wget $URL_DATASET_GLOBAL; mv time_series_covid19_confirmed_global.csv /dataset/covid19_global.csv;
 
-CMD $NIFI_HOME/bin/nifi.sh install ;
-CMD $NIFI_HOME/bin/nifi.sh start ;
-CMD exec /bin/bash -c "trap : TERM INT; sleep infinity & wait"
-
+CMD sh /usr/local/start-services.sh
 EXPOSE 4040
+#to connect to nifi ui: 0.0.0.0:4040/nifi
 
 # nifi remote debugging
 EXPOSE 43210 43212

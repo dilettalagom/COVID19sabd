@@ -74,21 +74,21 @@ services:
 #    tty: true
 #    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
 #
-#  zookeeper:
-#    image: wurstmeister/zookeeper
-#    container_name: zookeeper
-#    hostname: zookeeper
-#    networks:
-#      - app_network
-#    ports:
-#      - '2181:2181'
-#    environment:
-#      - ALLOW_ANONYMOUS_LOGIN=yes
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    hostname: zookeeper
+    networks:
+      - app_network
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
 
   nifi:
     build:
       context: ../docker-images/nifi-node
-    image: dilettalagom/nifi
+    image: nifi
     container_name: nifi
     hostname: nifi
     networks:
