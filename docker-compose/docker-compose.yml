@@ -88,13 +88,13 @@ services:
   nifi:
     build:
       context: ../docker-images/nifi-node
-    image: nifi
+    image: dilettalagom/nifi
     container_name: nifi
     hostname: nifi
     networks:
       - app_network
     volumes:
-      - ./nifi-configuration:/usr/local/nifi/conf/flow
+      - ./nifi-flow:/usr/local/nifi-1.11.4/conf/flow
     ports:
       - "4040:4040"
       - "43212:43212"

@@ -11,7 +11,7 @@ ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 ADD nifi-configuration/nifi-1.11.4-bin.tar.gz /usr/local/
 ADD nifi-configuration/start-services.sh /usr/local/
 ENV NIFI_HOME /usr/local/nifi-1.11.4
-ENV NIFI_DIR /usr/local/nifi
+ENV NIFI_FLOW_DIR $NIFI_HOME/conf/flow/
 ##RUN cd $NIFI_HOME/conf;
 ##RUN mv nifi.properties nifi.properties-old;
 #
@@ -22,21 +22,25 @@ VOLUME $NIFI_DIR/conf/flow
 ##VOLUME $NIFI_HOME/extensions
 
 RUN mkdir /dataset;
-RUN mkdir /dataset/hdfsconf;
-ADD hdfs-configuration/core-site.xml /dataset/hdfsconf
-ADD hdfs-configuration/hdfs-site.xml /dataset/hdfsconf
-#VOLUME /dataset/results-uploader
+# copia temporanea per salvare i dati dentro $NIFI_HOME -> nifi GUI la vede?
+RUN mkdir $NIFI_HOME/data;
+RUN mkdir /hdfsconf;
+ADD hdfs-configuration/core-site.xml /hdfsconf
+ADD hdfs-configuration/hdfs-site.xml /hdfsconf
+#VOLUME /data/results-uploader
 #
 ##RUN mkdir /data/hbaseconf
 ##ADD hbase-config/hbase-site.xml /data/hbaseconf/
 #
 ##ADD nar/nifi-location-info-retriever-nar-1.0-SNAPSHOT.nar $NIFI_HOME/lib
 #
+WORKDIR /dataset
 ENV URL_DATASET_ITA https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv
 ENV URL_DATASET_GLOBAL https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv
-WORKDIR /dataset
 RUN wget $URL_DATASET_ITA; mv dpc-covid19-ita-andamento-nazionale.csv /dataset/covid19_national.csv;
 RUN wget $URL_DATASET_GLOBAL; mv time_series_covid19_confirmed_global.csv /dataset/covid19_global.csv;
+
+RUN cp -a ./dataset $NIFI_HOME/
 
 CMD sh /usr/local/start-services.sh
 EXPOSE 4040
