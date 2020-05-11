@@ -1,0 +1,10 @@
+.idea
+.settings
+.vscode
+.classpath
+.factorypath
+.project
+/dataset
+/target
+/docker-images/nifi-node/nifi-configuration/nifi-1.11.4-bin.tar.gz
+/docker-images/nifi-node/nifi-configuration/nifi-1.11.4
