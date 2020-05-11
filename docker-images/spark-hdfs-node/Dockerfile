@@ -6,13 +6,10 @@ RUN apt-get update;
 # copy HDFS local configuratio in spark_hdfs_container
 #ADD hdfs-configuration/hadoop-env.sh $HADOOP_CONF_DIR/hadoop-env.sh
 ADD hdfs-configuration/core-site.xml $HADOOP_CONF_DIR/core-site.xml
-
 #config file for setting datanodes's names
 ADD hdfs-configuration/workers $HADOOP_CONF_DIR/workers
-
 #config file for deactivate privilege accesses
 ADD hdfs-configuration/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml
-
 #config file for master-worker interconnection TODO: misos
 ADD hdfs-configuration/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml
 

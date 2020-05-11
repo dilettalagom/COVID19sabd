@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:18.04
 USER root
 
 RUN apt-get update
@@ -50,4 +50,3 @@ EXPOSE 4040
 
 # nifi remote debugging
 EXPOSE 43210 43212
-
