@@ -1,4 +1,4 @@
-FROM  dilettalagom/base
+FROM effeerre/hadoop
 USER root
 
 RUN apt-get update;
@@ -8,7 +8,7 @@ RUN apt-get update;
 ADD hdfs-configuration/core.xml $HADOOP_CONF_DIR/core-site.xml
 
 #config file for setting datanodes's names
-ADD hdfs-configuration/workers-names $HADOOP_CONF_DIR/workers
+ADD hdfs-configuration/workers $HADOOP_CONF_DIR/workers
 
 #config file for deactivate privilege accesses
 ADD hdfs-configuration/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml
@@ -26,7 +26,7 @@ ENV PATH $PATH:$SPARK_HOME/bin
 # SPARK CONFIG FILES
 ADD spark-configuration/spark-env.sh $SPARK_HOME/conf
 ADD spark-configuration/spark-defaults.conf $SPARK_HOME/conf
-ADD spark-configuration/workers-names $SPARK_HOME/conf
+ADD spark-configuration/workers $SPARK_HOME/conf
 
 #create main directory
 RUN mkdir /target

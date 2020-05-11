@@ -11,6 +11,8 @@ $HADOOP_HOME/sbin/start-dfs.sh
 hdfs dfs -chmod -R 777 /
 hdfs dfs -mkdir /spark-events
 hdfs dfs -mkdir /spark-logs
+hdfs dfs -mkdir /dataset
+hdfs dfs -mkdir /results
 mkdir /tmp/spark-events
 
 #sleep 30
