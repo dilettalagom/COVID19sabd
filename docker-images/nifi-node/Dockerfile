@@ -2,7 +2,7 @@ FROM ubuntu
 USER root
 
 RUN apt-get update
-RUN apt-get install -y sudo wget openjdk-8-jre curl
+RUN apt-get install -y sudo wget openjdk-8-jre curl python vim
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
@@ -32,6 +32,10 @@ ADD hdfs-configuration/hdfs-site.xml $NIFI_HOME/hdfs-configuration
 #
 ##ADD nar/nifi-location-info-retriever-nar-1.0-SNAPSHOT.nar $NIFI_HOME/lib
 #
+
+#add nifi-scripts 
+RUN mkdir $NIFI_HOME/data/nifi-scripts
+COPY nifi-scripts $NIFI_HOME/data/nifi-scripts
 
 #import dataset from URL git
 WORKDIR $NIFI_HOME/data
