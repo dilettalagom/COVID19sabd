@@ -1,6 +1,8 @@
 package query;
 
 import model.NationalStatisticsPojo;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -9,12 +11,20 @@ import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
 import utility.parser.General;
 
+import java.io.File;
+import java.io.IOException;
+
 
 public class FirstQuery {
 
 
     public static void main(String[] args) {
-        SparkConf conf = new SparkConf()
+
+        System.out.println("30 Dic: " + General.createKey("2019-12-29T18:00:00"));
+        System.out.println("8 Gen: " + General.createKey("2020-01-08T18:00:00"));
+
+
+        /*SparkConf conf = new SparkConf()
                 .setMaster("local")
                 .setAppName("FirstQuery");
         JavaSparkContext context = new JavaSparkContext(conf);
@@ -48,7 +58,7 @@ public class FirstQuery {
         JavaPairRDD<String, Double> rddMeanTamponi = nationalInfo.aggregateByKey(
                 new StatCounter(),
                 (acc, x) -> acc.merge(x.getNumTampons()),
-                (acc1, acc2) -> acc1.merge(acc2)
+                StatCounter::merge
         )
                 //Key = Tuple3<Country, year, month>, Value = Tuple4<mean, std, min, max>
                 .mapToPair(x -> {
@@ -58,10 +68,20 @@ public class FirstQuery {
                 });
 
         //join tra i due RDD
-        JavaPairRDD<String, Tuple2<Double, Double>> result = rddMeanHealed.join(rddMeanTamponi);
-        //forza la scrittura su una partizione
-        result.repartition(1).saveAsTextFile ("hdfs://master:54310/results/firstQuery.csv");
+        JavaPairRDD<String, Tuple2<Double, Double>> resultRDD = rddMeanHealed.join(rddMeanTamponi).sortByKey();
+
+        try {
+            FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
+            Path path = new Path("hdfs://master:54310/results/firstQuery");
+            if(hdfs.exists(path)){
+                hdfs.delete(path, true);
+             }
+            resultRDD.repartition(1).saveAsTextFile (path.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
+
 
 
 

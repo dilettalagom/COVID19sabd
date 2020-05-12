@@ -15,8 +15,8 @@ services:
     networks:
       - app_network
     ports:
-      - "9870:9870" # hdfs
-      - "54310:54310" # hdfs ui
+      - "9870:9870" # hdfs ui
+      - "54310:54310" # hdfs
       - "43211:43211" #remote intellij degugging
       - "18080:18080" #spark history ui
     volumes:
