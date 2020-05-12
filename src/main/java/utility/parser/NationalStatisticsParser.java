@@ -1,18 +1,20 @@
 package utility.parser;
 
 import model.NationalStatisticsPojo;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 public class NationalStatisticsParser {
+
+    private static DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+
 
     public static NationalStatisticsPojo parseCSV(String csvLine) {
 
         NationalStatisticsPojo outlet = null;
         String[] csvValues = csvLine.split(",");
-
         if (csvValues.length != 3)
             return null;
-
-//            1464894,1377987280,3.216,0,1,0,3
 
         outlet = new NationalStatisticsPojo(
                 csvValues[0], //dateTime
