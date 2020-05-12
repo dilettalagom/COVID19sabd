@@ -2,9 +2,11 @@ FROM ubuntu:18.04
 USER root
 
 RUN apt-get update
-RUN apt-get install -y sudo wget openjdk-8-jre curl python vim
+RUN apt-get install -y sudo wget openjdk-8-jre curl python python3-pip vim
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+RUN pip3 install numpy
+RUN pip3 install pandas
 
 #RUN wget https://mirror.nohup.it/apache/nifi/1.11.4/nifi-1.11.4-bin.tar.gz ; tar -zxf nifi-1.11.4-bin.tar.gz -C /usr/local/ ; rm nifi-1.11.4-bin.tar.gz
 ADD nifi-configuration/nifi-1.11.4-bin.tar.gz /usr/local/
