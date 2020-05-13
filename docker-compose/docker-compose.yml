@@ -20,10 +20,10 @@ services:
       - "43211:43211" #remote intellij degugging
       - "18080:18080" #spark history ui
     volumes:
-      - ./target-master:/target
+      - ./target:/target
     stdin_open: true
     tty: true
-    command: bash -c "chmod 700 start-services-master.sh && sh start-services-master.sh"
+    command: bash -c "sh start-services.sh"
 
 
   worker1:
@@ -34,13 +34,13 @@ services:
       - app_network
     ports:
       - "9861:9861"
-    depends_on:
-      - master
+
     volumes:
-      - ./target-worker:/target
+      - ./target:/target
     stdin_open: true
     tty: true
-    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
+    command: bash -c "sh start-services.sh"
+
 
   worker2:
     image: dilettalagom/spark-hdfs-node
@@ -53,10 +53,10 @@ services:
     depends_on:
       - master
     volumes:
-      - ./target-worker:/target
+      - ./target:/target
     stdin_open: true
     tty: true
-    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
+    command: bash -c "sh start-services.sh"
 
   worker3:
     image: dilettalagom/spark-hdfs-node
@@ -69,10 +69,10 @@ services:
     depends_on:
       - master
     volumes:
-      - ./target-worker:/target
+      - ./target:/target
     stdin_open: true
     tty: true
-    command: bash -c "chmod 700 start-services-worker.sh && sh start-services-worker.sh"
+    command: bash -c "sh start-services.sh"
 
   zookeeper:
     image: wurstmeister/zookeeper

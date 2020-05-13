@@ -20,11 +20,8 @@ public class FirstQuery {
 
     public static void main(String[] args) {
 
-        System.out.println("30 Dic: " + General.createKey("2019-12-29T18:00:00"));
-        System.out.println("8 Gen: " + General.createKey("2020-01-08T18:00:00"));
 
-
-        /*SparkConf conf = new SparkConf()
+        SparkConf conf = new SparkConf()
                 .setMaster("local")
                 .setAppName("FirstQuery");
         JavaSparkContext context = new JavaSparkContext(conf);
@@ -75,11 +72,11 @@ public class FirstQuery {
             Path path = new Path("hdfs://master:54310/results/firstQuery");
             if(hdfs.exists(path)){
                 hdfs.delete(path, true);
-             }
+            }
             resultRDD.repartition(1).saveAsTextFile (path.toString());
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
     }
 
 

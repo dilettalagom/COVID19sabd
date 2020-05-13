@@ -56,7 +56,7 @@
                         </goals>
 
                         <configuration>
-                            <outputDirectory>docker-compose/target-master/jar</outputDirectory>
+                            <outputDirectory>docker-compose/target/jar</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target</directory>
