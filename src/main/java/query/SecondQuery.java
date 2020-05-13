@@ -10,15 +10,13 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
 import utility.parser.CalendarUtility;
-
 import java.io.IOException;
 
 
-public class FirstQuery {
+public class SecondQuery {
 
-
-    private static String datasetPath = "hdfs://master:54310/dataset/covid19_national.csv";
-    private static String resultFirstQueryPath =  "hdfs://master:54310/results/firstQuery";
+    private static String datasetPath = "hdfs://master:54310/dataset/covid19_global.csv";
+    private static String resultSecondQueryPath =  "hdfs://master:54310/results/secondQuery";
 
 
     public static void main(String[] args) {
@@ -37,7 +35,7 @@ public class FirstQuery {
                 (String line) ->  {
                     String[] lineSplitted = line.split(",");
                     NationalStatisticsPojo pojo = new NationalStatisticsPojo(lineSplitted[0],lineSplitted[1],lineSplitted[2]);
-                    String key = CalendarUtility.createKeyYearMonth(lineSplitted[0]);
+                    String key = CalendarUtility.createKey(lineSplitted[0]);
                     return new Tuple2(key,pojo);
                 }).cache();
 
@@ -73,30 +71,14 @@ public class FirstQuery {
 
         try {
             FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
-            Path path = new Path(resultFirstQueryPath);
+            Path path = new Path(resultSecondQueryPath);
             if(hdfs.exists(path)){
                 hdfs.delete(path, true);
             }
-            resultRDD.repartition(1).saveAsTextFile (resultFirstQueryPath);
+            resultRDD.repartition(1).saveAsTextFile (resultSecondQueryPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
