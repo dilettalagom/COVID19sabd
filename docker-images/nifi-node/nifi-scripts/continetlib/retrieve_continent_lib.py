@@ -1,6 +1,7 @@
 import collections, csv, logging, os, sys, zipfile
 import pycountry_convert as pc
-
+import pandas as pd
+import numpy as np
 
 if sys.platform == 'win32':
     csv.field_size_limit(2 ** 31 - 1)
@@ -122,20 +123,21 @@ def search(coordinates):
     return gd.query(coordinates)
 
 
-class Continent:
-    def get_Continent(lat, long):
-        continents = {
-            'NA': 'America',
-            'SA': 'America',
-            'AS': 'Asia',
-            'OC': 'Oceania',
-            'AF': 'Africa',
-            'AN': 'Antartide',
-            'EU': 'Europa'
-        }
-
-        temp = search([(lat,long)])
+def get_continent(lat, lon):
+    continents = {
+        'NA': 'America',
+        'SA': 'America',
+        'AS': 'Asia',
+        'OC': 'Oceania',
+        'AF': 'Africa',
+        'AN': 'Antartide',
+        'EU': 'Europa'
+    }
+    if lat==0.0 and lon==0.0:
+        return ('Not a continent')
+    else:
+        temp = search([(lat, lon)])
         country_code = temp[0]["country_code"]
         continent_code = pc.country_alpha2_to_continent_code(country_code)
 
-        return (continents[continent_code])
+        return continents[continent_code]
