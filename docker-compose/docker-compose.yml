@@ -17,7 +17,7 @@ services:
     ports:
       - "9870:9870" # hdfs ui
       - "54310:54310" # hdfs
-      - "43211:43211" #remote intellij degugging
+      - "43211:43211" #remote intellij debugging
       - "18080:18080" #spark history ui
     volumes:
       - ./target:/target
@@ -34,7 +34,8 @@ services:
       - app_network
     ports:
       - "9861:9861"
-
+    depends_on:
+      - master
     volumes:
       - ./target:/target
     stdin_open: true

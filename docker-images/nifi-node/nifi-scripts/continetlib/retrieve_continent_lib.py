@@ -17,6 +17,15 @@ from scipy.spatial import cKDTree as KDTree
 GEOCODE_URL = 'http://download.geonames.org/export/dump/cities1000.zip'
 GEOCODE_FILENAME = 'cities1000.txt'
 
+continents = {
+    'NA': 'America',
+    'SA': 'America',
+    'AS': 'Asia',
+    'OC': 'Oceania',
+    'AF': 'Africa',
+    'AN': 'Antartide',
+    'EU': 'Europa'
+}
 
 def singleton(cls):
     """Singleton pattern to avoid loading class multiple times
@@ -124,20 +133,17 @@ def search(coordinates):
 
 
 def get_continent(lat, lon):
-    continents = {
-        'NA': 'America',
-        'SA': 'America',
-        'AS': 'Asia',
-        'OC': 'Oceania',
-        'AF': 'Africa',
-        'AN': 'Antartide',
-        'EU': 'Europa'
-    }
-    if lat==0.0 and lon==0.0:
+
+    if lat == 0.0 and lon == 0.0:
         return ('Not a continent')
     else:
         temp = search([(lat, lon)])
         country_code = temp[0]["country_code"]
-        continent_code = pc.country_alpha2_to_continent_code(country_code)
+        if country_code == 'VA':
+            continent_code = 'EU'
+        elif country_code == 'TL' or country_code == 'SX':
+            continent_code = 'AS'
+        else:
+            continent_code = pc.country_alpha2_to_continent_code(country_code)
 
         return continents[continent_code]

@@ -9,7 +9,6 @@ RUN pip install numpy
 RUN pip install pandas
 RUN pip install pycountry_convert
 RUN pip install scipy
-RUN pip install tssplit
 
 #RUN wget https://mirror.nohup.it/apache/nifi/1.11.4/nifi-1.11.4-bin.tar.gz ; tar -zxf nifi-1.11.4-bin.tar.gz -C /usr/local/ ; rm nifi-1.11.4-bin.tar.gz
 ADD nifi-configuration/nifi-1.11.4-bin.tar.gz /usr/local/
