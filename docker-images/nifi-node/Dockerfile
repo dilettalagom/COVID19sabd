@@ -39,7 +39,9 @@ ADD hdfs-configuration/hdfs-site.xml $NIFI_HOME/hdfs-configuration
 
 #add nifi-scripts 
 RUN mkdir $NIFI_HOME/data/nifi-scripts
+VOLUME $NIFI_HOME/data/nifi-scripts
 COPY nifi-scripts $NIFI_HOME/data/nifi-scripts
+
 
 #import dataset from URL git
 WORKDIR $NIFI_HOME/data
