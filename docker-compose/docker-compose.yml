@@ -95,7 +95,7 @@ services:
     networks:
       - app_network
     volumes:
-      - ./nifi-flow:/usr/local/nifi-1.11.4/conf/flow
+      - ./nifi-flow:/usr/local/nifi-1.11.4/conf/flow 
     ports:
       - "4040:4040"
       - "43212:43212"

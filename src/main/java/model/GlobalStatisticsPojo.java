@@ -7,10 +7,12 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-@ToString
-public class GlobalStatisticsPojo {
+import java.util.Date;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-    private static DateTimeFormatter formatter = DateTimeFormat.forPattern("dd/MM/yyyyMM");
+@ToString
+public class GlobalStatisticsPojo implements Comparable<DateTime>{
 
     @Getter @Setter
     String state;
@@ -19,24 +21,32 @@ public class GlobalStatisticsPojo {
     @Getter @Setter
     String continent;
     @Getter @Setter
-    private DateTime date;
+    TreeMap<DateTime,Integer> values;
     @Getter @Setter
-    private int numHealed;
+    float trendCoefficient;
 
 
-    public GlobalStatisticsPojo(String state, String nation, String continent, DateTime date, int numHealed) {
+    public GlobalStatisticsPojo(String state, String nation, String continent, TreeMap<DateTime,Integer> values) {
         this.state = state;
         this.country = nation;
         this.continent = continent;
-        this.date = date;
-        this.numHealed = numHealed;
+        this.values = values;
     }
 
-    public static DateTime formatDate(String date){
-        return DateTime.parse(date,formatter);
+    public GlobalStatisticsPojo(String state, String nation, String continent, TreeMap<DateTime,Integer> values,float trend) {
+        this.state = state;
+        this.country = nation;
+        this.continent = continent;
+        this.values = values;
+        this.trendCoefficient = trend;
     }
 
 
+
+    @Override
+    public int compareTo(DateTime o) {
+        return 0;
+    }
 }
 
 
