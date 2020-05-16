@@ -1,6 +1,7 @@
 package query;
 
 import model.NationalStatisticsPojo;
+import model.NationalWeekKey;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
@@ -9,8 +10,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
-import utility.parser.CalendarUtility;
-
 import java.io.IOException;
 
 
@@ -33,43 +32,46 @@ public class FirstQuery {
         String csvHeader = csvData.first();
         JavaRDD<String> nonHeaderCSV = csvData.filter(row -> !row.equals(csvHeader));
 
-        JavaPairRDD<String, NationalStatisticsPojo> nationalInfo = nonHeaderCSV.mapToPair(
+        JavaPairRDD<NationalWeekKey, NationalStatisticsPojo> nationalInfo = nonHeaderCSV.mapToPair(
                 (String line) ->  {
                     String[] lineSplitted = line.split(",");
                     NationalStatisticsPojo pojo = new NationalStatisticsPojo(lineSplitted[0],lineSplitted[1],lineSplitted[2]);
-                    String key = CalendarUtility.createKeyYearMonth(lineSplitted[0]);
+                    //String key = CalendarUtility.createKeyYearMonth(lineSplitted[0]);
+                    NationalWeekKey key = new NationalWeekKey(lineSplitted[0]);
                     return new Tuple2(key,pojo);
                 }).cache();
 
         //media guariti
-        JavaPairRDD<String, Double> rddMeanHealed = nationalInfo.aggregateByKey(
+        JavaPairRDD<NationalWeekKey, Double> rddMeanHealed = nationalInfo.aggregateByKey(
                 new StatCounter(),
                 (acc, x) -> acc.merge(x.getNumHealed()),
                 (acc1, acc2) -> acc1.merge(acc2)
         )
 
-                //Key = Tuple3<Country, year, month>, Value = Tuple4<mean, std, min, max>
+                //Key = NationalWeekKey, Value = Tuple4<mean, std, min, max>
                 .mapToPair(x -> {
-                    String key = x._1();
+                    NationalWeekKey nationalWeekKey = x._1();
                     Double mean = x._2().mean();
-                    return new Tuple2<>(key, mean);
+                    return new Tuple2<>(nationalWeekKey, mean);
                 });
 
+
+
         //media tamponi
-        JavaPairRDD<String, Double> rddMeanTamponi = nationalInfo.aggregateByKey(
+        JavaPairRDD<NationalWeekKey, Double> rddMeanTamponi = nationalInfo.aggregateByKey(
                 new StatCounter(),
                 (acc, x) -> acc.merge(x.getNumTampons()),
                 StatCounter::merge
         )
                 //Key = Tuple3<Country, year, month>, Value = Tuple4<mean, std, min, max>
                 .mapToPair(x -> {
-                    String key = x._1();
+                    NationalWeekKey nationalWeekKey = x._1();
                     Double mean = x._2().mean();
-                    return new Tuple2<>(key, mean);
+                    return new Tuple2<>(nationalWeekKey, mean);
                 });
 
         //join tra i due RDD
-        JavaPairRDD<String, Tuple2<Double, Double>> resultRDD = rddMeanHealed.join(rddMeanTamponi).sortByKey();
+        JavaPairRDD<NationalWeekKey, Tuple2<Double, Double>> resultRDD = rddMeanHealed.join(rddMeanTamponi).sortByKey();
 
         try {
             FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());

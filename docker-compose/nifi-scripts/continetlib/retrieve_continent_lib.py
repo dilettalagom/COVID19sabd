@@ -135,7 +135,7 @@ def search(coordinates):
 def get_continent(lat, lon):
 
     if lat == 0.0 and lon == 0.0:
-        return ('Not a continent')
+        return ('International waters')
     else:
         temp = search([(lat, lon)])
         country_code = temp[0]["country_code"]
