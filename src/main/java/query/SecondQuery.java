@@ -4,6 +4,8 @@ package query;
 import model.ClassificationKeyPojo;
 import model.GlobalStatisticsPojo;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -12,6 +14,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import scala.Tuple2;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
@@ -60,60 +63,32 @@ public class SecondQuery {
                     double trendlineCoefficient = r.getSlope();
                     ClassificationKeyPojo key = new ClassificationKeyPojo(state, country, trendlineCoefficient);
                     GlobalStatisticsPojo pojo = new GlobalStatisticsPojo(state, country, continent, values, trendlineCoefficient);
-                    System.out.println(pojo.getState() + " , " + pojo.getCountry() + " , " + pojo.getTrendCoefficient());
                     return new Tuple2(key, pojo);
                 }).cache();
 
-        List<Tuple2<ClassificationKeyPojo, GlobalStatisticsPojo>> result = globalInfo.top(100);
+        //Classification of top 100 for infected
+        List<Tuple2<ClassificationKeyPojo, GlobalStatisticsPojo>> classification = globalInfo.sortByKey(false).take(100);
+        JavaPairRDD<ClassificationKeyPojo, GlobalStatisticsPojo> classificationRDD = context.parallelizePairs(classification);
 
+        /*JavaPairRDD<ContinentStatisticsKey, > = classificationRDD.flatMap(
+                rddElement -> {
+                    for(DateTime date: rddElement._2.getValues().navigableKeySet()) {
+                        ContinentStatisticsKey key = new ContinentStatisticsKey(rddElement._2.getContinent(),);
+                    }
+                }
+        )*/
 
-        //JavaPairRDD<ClassificationKeyPojo, GlobalStatisticsPojo> resulrRDD = (JavaPairRDD<ClassificationKeyPojo, GlobalStatisticsPojo>) globalInfo.sortByKey().top(100);
-
-        //classifica 100 paesi più contagiati
-
-//        //media guariti
-//        JavaPairRDD<String, Double> rddMeanHealed = nationalInfo.aggregateByKey(
-//                new StatCounter(),
-//                (acc, x) -> acc.merge(x.getNumHealed()),
-//                (acc1, acc2) -> acc1.merge(acc2)
-//        )
-//
-//                //Key = Tuple3<Country, year, month>, Value = Tuple4<mean, std, min, max>
-//                .mapToPair(x -> {
-//                    String key = x._1();
-//                    Double mean = x._2().mean();
-//                    return new Tuple2<>(key, mean);
-//                });
-//
-//        //media tamponi
-//        JavaPairRDD<String, Double> rddMeanTamponi = nationalInfo.aggregateByKey(
-//                new StatCounter(),
-//                (acc, x) -> acc.merge(x.getNumTampons()),
-//                StatCounter::merge
-//        )
-//                //Key = Tuple3<Country, year, month>, Value = Tuple4<mean, std, min, max>
-//                .mapToPair(x -> {
-//                    String key = x._1();
-//                    Double mean = x._2().mean();
-//                    return new Tuple2<>(key, mean);
-//                });
-//
-//        //join tra i due RDD
-//        JavaPairRDD<String, Tuple2<Double, Double>> resultRDD = rddMeanHealed.join(rddMeanTamponi).sortByKey();
-//
-        /*try {
+        try {
             FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
             Path path = new Path(resultSecondQueryPath);
             if (hdfs.exists(path)) {
                 hdfs.delete(path, true);
             }
-            globalInfo.repartition(1).saveAsTextFile(resultSecondQueryPath);
+            //resultRDD.repartition(1).saveAsTextFile(resultSecondQueryPath);
             context.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
-
-        System.out.println(Arrays.toString(result.toArray()));
+        }
 
 
     }

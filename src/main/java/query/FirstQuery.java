@@ -10,6 +10,8 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
+import utility.parser.CalendarUtility;
+
 import java.io.IOException;
 
 
@@ -34,9 +36,8 @@ public class FirstQuery {
 
         JavaPairRDD<NationalWeekKey, NationalStatisticsPojo> nationalInfo = nonHeaderCSV.mapToPair(
                 (String line) ->  {
-                    String[] lineSplitted = line.split("\"[^\"]*\"|[^,]+");
+                    String[] lineSplitted = line.split(",");
                     NationalStatisticsPojo pojo = new NationalStatisticsPojo(lineSplitted[0],lineSplitted[1],lineSplitted[2]);
-                    //String key = CalendarUtility.createKeyYearMonth(lineSplitted[0]);
                     NationalWeekKey key = new NationalWeekKey(lineSplitted[0]);
                     return new Tuple2(key,pojo);
                 }).cache();

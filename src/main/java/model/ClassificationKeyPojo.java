@@ -33,17 +33,14 @@ public class ClassificationKeyPojo implements Serializable, Comparable<Classific
 
     @Override
     public int hashCode() {
-        return Objects.hash(trendCoefficient);
+        return Objects.hash(trendCoefficient, country, state);
     }
 
     @Override
     public int compareTo(ClassificationKeyPojo o) {
-        if(this.trendCoefficient==o.trendCoefficient)
-            return 0;
-        else if(this.trendCoefficient>o.trendCoefficient)
-            return 1;
-        else
-            return -1;
+        Double o1 = new Double(this.trendCoefficient);
+        Double o2 = new Double(o.trendCoefficient);
+        return o1.compareTo(o2);
     }
 
     @Override
