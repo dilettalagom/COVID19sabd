@@ -34,7 +34,7 @@ public class FirstQuery {
 
         JavaPairRDD<NationalWeekKey, NationalStatisticsPojo> nationalInfo = nonHeaderCSV.mapToPair(
                 (String line) ->  {
-                    String[] lineSplitted = line.split(",");
+                    String[] lineSplitted = line.split("\"[^\"]*\"|[^,]+");
                     NationalStatisticsPojo pojo = new NationalStatisticsPojo(lineSplitted[0],lineSplitted[1],lineSplitted[2]);
                     //String key = CalendarUtility.createKeyYearMonth(lineSplitted[0]);
                     NationalWeekKey key = new NationalWeekKey(lineSplitted[0]);
@@ -54,8 +54,6 @@ public class FirstQuery {
                     Double mean = x._2().mean();
                     return new Tuple2<>(nationalWeekKey, mean);
                 });
-
-
 
         //media tamponi
         JavaPairRDD<NationalWeekKey, Double> rddMeanTamponi = nationalInfo.aggregateByKey(
@@ -84,16 +82,6 @@ public class FirstQuery {
             e.printStackTrace();
         }
     }
-
-
-
-
-
-
-
-
-
-
 }
 
 

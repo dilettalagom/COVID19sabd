@@ -1,13 +1,10 @@
 package model;
 
-import jdk.nashorn.internal.objects.annotations.Setter;
+
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.threeten.extra.YearWeek;
-
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -72,4 +69,9 @@ public class NationalWeekKey implements Serializable, Comparable<NationalWeekKey
     public int hashCode() {
         return Objects.hash(WeekYear);
     }
+
+
+
+
+
 }

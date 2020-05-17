@@ -1,38 +1,25 @@
 package model;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import java.util.Date;
+
+import java.io.Serializable;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
-@ToString
-public class GlobalStatisticsPojo implements Comparable<DateTime>{
+@ToString @Data
+public class GlobalStatisticsPojo implements Serializable {
 
-    @Getter @Setter
     String state;
-    @Getter @Setter
     String country;
-    @Getter @Setter
     String continent;
-    @Getter @Setter
     TreeMap<DateTime,Integer> values;
-    @Getter @Setter
-    float trendCoefficient;
+    double trendCoefficient;
 
 
-    public GlobalStatisticsPojo(String state, String nation, String continent, TreeMap<DateTime,Integer> values) {
-        this.state = state;
-        this.country = nation;
-        this.continent = continent;
-        this.values = values;
-    }
-
-    public GlobalStatisticsPojo(String state, String nation, String continent, TreeMap<DateTime,Integer> values,float trend) {
+    public GlobalStatisticsPojo(String state, String nation, String continent, TreeMap<DateTime,Integer> values,double trend) {
         this.state = state;
         this.country = nation;
         this.continent = continent;
@@ -40,13 +27,6 @@ public class GlobalStatisticsPojo implements Comparable<DateTime>{
         this.trendCoefficient = trend;
     }
 
-
-
-    @Override
-    public int compareTo(DateTime o) {
-        return 0;
-    }
 }
 
 
-//
