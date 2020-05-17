@@ -7,6 +7,4 @@
 /dataset
 /target
 /docker-images/nifi-node/nifi-configuration/nifi-1.11.4-bin.tar.gz
-/docker-images/nifi-node/hdfs-configuration/nifi-1.11.4-bin.tar.gz
-/docker-images/nifi-node/nifi-configuration/nifi-1.11.4
 dependency-reduced-pom.xml
