@@ -19,7 +19,6 @@ import query.customCombiner.TrendComparator;
 import scala.Tuple2;
 import scala.Tuple4;
 import utility.parser.General;
-
 import java.io.IOException;
 import java.util.*;
 
@@ -100,7 +99,7 @@ public class SecondQuery {
                 });
 
 
-               //Create custom-accumulator instance and its methods.
+        //Create custom-accumulator instance and its methods.
         KeyAccumulator accumulator = new KeyAccumulator();
         Function<Tuple2<String,Double>,
                 List<Tuple2<String,Double>>> createAccumulator = accumulator.createAccumulator();
@@ -170,7 +169,6 @@ public class SecondQuery {
             if (hdfs.exists(path)) {
                 hdfs.delete(path, true);
             }
-
             statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery");
             top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/TOP100");
             context.close();
