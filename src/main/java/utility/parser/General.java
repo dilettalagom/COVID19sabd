@@ -25,4 +25,15 @@ public class General {
 
     }
 
+    public static String createKeyYearMonth(String date) {
+
+
+        DateTimeFormatter FMT = new DateTimeFormatterBuilder()
+                .appendOptional(DateTimeFormatter.ofPattern("M/d/yy"))
+                .toFormatter();
+        TemporalAccessor dt = FMT.parseBest(date, LocalDateTime::from, LocalDate::from);
+        YearWeek yw = YearWeek.from(dt);
+        return yw.toString();
+    }
+
 }

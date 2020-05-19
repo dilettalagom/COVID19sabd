@@ -7,19 +7,22 @@ import java.util.Objects;
 
 
 @Data
-public class ClassificationKeyPojo implements Serializable, Comparable<ClassificationKeyPojo>{
+public class ClassificationKeyPojo implements Serializable {
 
+    double trendCoefficient;
     String state;
     String country;
-    double trendCoefficient;
+    String continent;
+    String weekYear;
 
-    public ClassificationKeyPojo(String state, String country, double trendCoefficient) {
+
+    public ClassificationKeyPojo( double trendCoefficient, String state, String country, String continent) {
+        this.trendCoefficient = trendCoefficient;
         this.state = state;
         this.country = country;
-        this.trendCoefficient = trendCoefficient;
+        this.continent = continent;
+
     }
-
-
 
     @Override
     public boolean equals(Object o) {
@@ -28,25 +31,21 @@ public class ClassificationKeyPojo implements Serializable, Comparable<Classific
         ClassificationKeyPojo that = (ClassificationKeyPojo) o;
         return Double.compare(that.trendCoefficient, trendCoefficient) == 0 &&
                 Objects.equals(state, that.state) &&
-                country.equals(that.country);
+                country.equals(that.country) &&
+                continent.equals(that.continent) &&
+                Objects.equals(weekYear, that.weekYear);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(trendCoefficient, country, state);
-    }
-
-    @Override
-    public int compareTo(ClassificationKeyPojo o) {
-        Double o1 = new Double(this.trendCoefficient);
-        Double o2 = new Double(o.trendCoefficient);
-        return o1.compareTo(o2);
+        return Objects.hash(trendCoefficient, state, country, continent, weekYear);
     }
 
     @Override
     public String toString() {
-        return "state='" + state + '\'' +
-                ", country='" + country + '\'' +
-                ", trendCoefficient=" + trendCoefficient;
+        return "trendCoefficient= '" + trendCoefficient+ '\'' +
+                ", state= '" + state + '\'' +
+                ", country= '" + country + '\'' +
+                ", continent= '" + continent;
     }
 }

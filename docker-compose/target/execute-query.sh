@@ -23,11 +23,11 @@ execute_query() {
 
   if [ $q = 1 ]
   then
-    echo "\n-------------------- submitting QUERY 1 --------------------"
+    echo "\n--------------------< submitting QUERY 1 >--------------------"
     
     #query submit
     $SPARK_HOME/bin/spark-submit \
-    --class query.FirstQuery \
+    --class query.query1.FirstQuery \
     --master "local" \
     /target/jar/COVID19sabd-1.0-SNAPSHOT.jar
 
@@ -37,11 +37,11 @@ execute_query() {
   
   elif [ $q = 2 ]
   then
-    echo "\n-------------------- submitting QUERY 2 --------------------"
+    echo "\n--------------------< submitting QUERY 2 >--------------------"
     
     #query submit
     $SPARK_HOME/bin/spark-submit \
-    --class query.SecondQuery \
+    --class query.query2.SecondQuery \
     --master "local" \
     /target/jar/COVID19sabd-1.0-SNAPSHOT.jar --num-executors 1 --executor-cores 1 \
     --conf "spark.executor.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=n,address=mbp-di-giorgia.homenet.telecomitalia.it:43211,suspend=y,onthrow=<FQ exception class name>,onuncaught=<y/n>"
@@ -52,7 +52,7 @@ execute_query() {
 
   elif [ $q = 3 ]
   then
-    echo "\n-------------------- submitting QUERY 3 --------------------"
+    echo "\n--------------------< submitting QUERY 3 >--------------------"
     $SPARK_HOME/bin/spark-submit \
     --class query.ThirdQuery \
     --master "local" \

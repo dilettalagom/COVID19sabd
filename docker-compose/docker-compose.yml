@@ -43,37 +43,37 @@ services:
     command: bash -c "sh start-services.sh"
 
 
-  worker2:
-    image: dilettalagom/spark-hdfs-node
-    container_name: worker2
-    hostname: worker2
-    networks:
-      - app_network
-    ports:
-      - "9862:9861"
-    depends_on:
-      - master
-    volumes:
-      - ./target:/target
-    stdin_open: true
-    tty: true
-    command: bash -c "sh start-services.sh"
-
-  worker3:
-    image: dilettalagom/spark-hdfs-node
-    container_name: worker3
-    hostname: worker3
-    networks:
-      - app_network
-    ports:
-      - "9863:9861"
-    depends_on:
-      - master
-    volumes:
-      - ./target:/target
-    stdin_open: true
-    tty: true
-    command: bash -c "sh start-services.sh"
+#  worker2:
+#    image: dilettalagom/spark-hdfs-node
+#    container_name: worker2
+#    hostname: worker2
+#    networks:
+#      - app_network
+#    ports:
+#      - "9862:9861"
+#    depends_on:
+#      - master
+#    volumes:
+#      - ./target:/target
+#    stdin_open: true
+#    tty: true
+#    command: bash -c "sh start-services.sh"
+#
+#  worker3:
+#    image: dilettalagom/spark-hdfs-node
+#    container_name: worker3
+#    hostname: worker3
+#    networks:
+#      - app_network
+#    ports:
+#      - "9863:9861"
+#    depends_on:
+#      - master
+#    volumes:
+#      - ./target:/target
+#    stdin_open: true
+#    tty: true
+#    command: bash -c "sh start-services.sh"
 
   zookeeper:
     image: wurstmeister/zookeeper
