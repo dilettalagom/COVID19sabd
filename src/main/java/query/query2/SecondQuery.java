@@ -2,6 +2,7 @@ package query.query2;
 
 
 import model.ClassificationKeyPojo;
+import model.ContinentWeekKey;
 import model.GlobalStatisticsPojo;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -22,6 +23,7 @@ import query.customCombiner.TrendComparator;
 import query.customCombiner.WeekyearContinentComparator;
 import scala.Tuple2;
 import scala.Tuple4;
+import scala.util.control.TailCalls;
 import utility.parser.General;
 
 import java.io.IOException;
@@ -65,10 +67,13 @@ public class SecondQuery {
                     return new Tuple2(key,pojo);
                 }).cache();
 
+        List top100List = splittedRDD.sortByKey(new TrendComparator(), false).take(100);
+        JavaPairRDD top100RDD = context.parallelizePairs(top100List);
+
 
         // < ClassificationKeyPojo, Tuple2< data, infected> >
         JavaPairRDD < ClassificationKeyPojo, Tuple2<String,Double>> remappedRDD =
-                splittedRDD.flatMapToPair(new PairFlatMapFunction <
+                top100RDD.flatMapToPair(new PairFlatMapFunction <
                         Tuple2<ClassificationKeyPojo, GlobalStatisticsPojo>,
                         ClassificationKeyPojo,Tuple2<String,Double>
                         >(){
@@ -99,39 +104,6 @@ public class SecondQuery {
                 });
 
 
-        // orderedByTrendRD
-        List<Tuple2<ClassificationKeyPojo, Iterable<Tuple2<String, Double>>>> top100List = remappedRDD.groupByKey().sortByKey(new TrendComparator(), false).take(100);
-        JavaPairRDD<ClassificationKeyPojo, Iterable<Tuple2<String, Double>>> top100RDD = context.parallelizePairs(top100List);
-        //List<Tuple2<ClassificationKeyPojo, Tuple2<String, Double>>> top100List = remappedRDD.sortByKey(new TrendComparator(), false).take(100);
-        //JavaPairRDD<ClassificationKeyPojo, Tuple2<String, Double>> top100RDD = context.parallelizePairs(top100List);
-
-
-        JavaPairRDD <ClassificationKeyPojo, Tuple2<String, Double>> explotedTop100 =
-                top100RDD.flatMapToPair(new PairFlatMapFunction<
-                        Tuple2<ClassificationKeyPojo, Iterable<Tuple2<String, Double>>>,
-                        ClassificationKeyPojo, Tuple2<String, Double>
-                        >(){
-                    @Override
-                    public Iterator< Tuple2< ClassificationKeyPojo, Tuple2<String, Double>  >>
-
-                    call(Tuple2<ClassificationKeyPojo, Iterable<Tuple2<String, Double>>> tuplaRDD) throws Exception {
-
-                        ArrayList< Tuple2<ClassificationKeyPojo, Tuple2<String, Double>> >  tupleList = new ArrayList<>();
-
-                        for(Tuple2<String, Double> tupla : tuplaRDD._2()) {
-
-                            Tuple2 exploted = new Tuple2<>(tuplaRDD._1(), tupla);
-                            tupleList.add(exploted);
-                        }
-
-                        return tupleList.iterator();
-                    }
-                });
-
-        //UNTIL HERE IT'S WORKING
-//----------------------------------------------------------------
-
-
                //Create custom-accumulator instance and its methods.
         KeyAccumulator accumulator = new KeyAccumulator();
         Function<Tuple2<String,Double>,
@@ -148,23 +120,25 @@ public class SecondQuery {
 
         //Key is ClassificationKeyPojo, value is List<weekYear, infected>
         JavaPairRDD<ClassificationKeyPojo, List<Tuple2<String, Double>>> combinedClassificationRDD =
-                explotedTop100.combineByKey(createAccumulator, mergeOneValueAcc, mergeObjectsAcc);
+                remappedRDD.combineByKey(createAccumulator, mergeOneValueAcc, mergeObjectsAcc);
 
 
-        JavaPairRDD<ClassificationKeyPojo, Tuple2<String, Double>> classificationKeyPojoTuple2JavaPairRDD = combinedClassificationRDD.flatMapToPair(new PairFlatMapFunction<
+
+        JavaPairRDD<ContinentWeekKey, Tuple2<String, Double>> classificationKeyPojoTuple2JavaPairRDD = combinedClassificationRDD.flatMapToPair(new PairFlatMapFunction<
                 Tuple2<ClassificationKeyPojo, List<Tuple2<String, Double>>>,
-                ClassificationKeyPojo, Tuple2<String, Double>
+                ContinentWeekKey, Tuple2<String, Double>
                 >() {
             @Override
-            public Iterator<Tuple2<ClassificationKeyPojo, Tuple2<String, Double>>>
+            public Iterator<Tuple2<ContinentWeekKey, Tuple2<String, Double>>>
 
             call(Tuple2<ClassificationKeyPojo, List<Tuple2<String, Double>>> tuplaRDD) throws Exception {
 
-                ArrayList<Tuple2<ClassificationKeyPojo, Tuple2<String, Double>>> tupleList = new ArrayList<>();
+                ArrayList<Tuple2<ContinentWeekKey, Tuple2<String, Double>>> tupleList = new ArrayList<>();
 
                 for (Tuple2<String, Double> tupla : tuplaRDD._2()) {
 
-                    Tuple2 exploted = new Tuple2<>(tuplaRDD._1(), tupla);
+                    ContinentWeekKey newKey = new ContinentWeekKey(tuplaRDD._1().getContinent(),tuplaRDD._1().getWeekYear(),tuplaRDD._1().getTrendCoefficient());
+                    Tuple2<ContinentWeekKey, Tuple2<String, Double>> exploted = new Tuple2<>(newKey, tupla);
                     tupleList.add(exploted);
                 }
 
@@ -183,7 +157,7 @@ public class SecondQuery {
 
                 //Key = ClassificationKeyPojo, Value = Tuple4<mean, std, min, max>
                 .mapToPair(x -> {
-                    ClassificationKeyPojo key = x._1();
+                    ContinentWeekKey key = x._1();
                     Double mean = x._2().mean();
                     Double dev = x._2().stdev();
                     Double min = x._2().min();

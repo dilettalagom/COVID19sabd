@@ -55,7 +55,7 @@ public class ClassificationKeyPojo implements Serializable {
         return "trendCoefficient= '" + trendCoefficient+ '\'' +
                 ", state= '" + state + '\'' +
                 ", country= '" + country + '\'' +
-                ", continent= '" + continent +
-                "weekYear= " + weekYear;
+                ", continent= '" + continent + '\'' +
+                "weekYear= '" + weekYear;
     }
 }

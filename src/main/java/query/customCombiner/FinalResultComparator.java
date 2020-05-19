@@ -1,16 +1,17 @@
 package query.customCombiner;
 
 import model.ClassificationKeyPojo;
+import model.ContinentWeekKey;
 
 import java.io.Serializable;
 import java.util.Comparator;
 
 
 
-public class FinalResultComparator implements Serializable, Comparator<ClassificationKeyPojo> {
+public class FinalResultComparator implements Serializable, Comparator<ContinentWeekKey> {
 
     @Override
-    public int compare(ClassificationKeyPojo o1, ClassificationKeyPojo o2) {
+    public int compare(ContinentWeekKey o1, ContinentWeekKey o2) {
         int c = (new Double(o1.getTrendCoefficient()).compareTo(new Double(o2.getTrendCoefficient())));
         if (c == 0){
             c = o1.getWeekYear().compareTo(o2.getWeekYear());
