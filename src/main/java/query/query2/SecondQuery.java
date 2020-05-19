@@ -71,6 +71,7 @@ public class SecondQuery {
         JavaPairRDD top100RDD = context.parallelizePairs(top100List);
 
 
+
         // < ClassificationKeyPojo, Tuple2< data, infected> >
         JavaPairRDD < ClassificationKeyPojo, Tuple2<String,Double>> remappedRDD =
                 top100RDD.flatMapToPair(new PairFlatMapFunction <
