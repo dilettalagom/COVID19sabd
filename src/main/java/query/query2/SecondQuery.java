@@ -14,16 +14,10 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.util.StatCounter;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import query.customCombiner.FinalResultComparator;
 import query.customCombiner.KeyAccumulator;
 import query.customCombiner.TrendComparator;
-import query.customCombiner.WeekyearContinentComparator;
 import scala.Tuple2;
 import scala.Tuple4;
-import scala.util.control.TailCalls;
 import utility.parser.General;
 
 import java.io.IOException;
@@ -34,7 +28,7 @@ public class SecondQuery {
 
 
     private static String datasetPath = "hdfs://master:54310/dataset/covid19_global.csv";
-    private static String resultSecondQueryPath = "hdfs://master:54310/results/secondQuery";
+    private static String resultSecondQueryPath = "hdfs://master:54310/results";
 
     public static void main(String[] args) {
 
@@ -51,6 +45,7 @@ public class SecondQuery {
         String[] dates = Arrays.copyOfRange(headerSplitted, 5, headerSplitted.length);
 
 
+        /*TODO: potrebbe diventare un solo RDD perche GlobalStatisticsPojo e ClassificationKeyPojo sono praticamente uguali*/
         JavaPairRDD splittedRDD =  nonHeaderCSV.mapToPair(
                 (String line) -> {
                     String[] lineSplitted = line.split(",");
@@ -138,7 +133,7 @@ public class SecondQuery {
 
                 for (Tuple2<String, Double> tupla : tuplaRDD._2()) {
 
-                    ContinentWeekKey newKey = new ContinentWeekKey(tuplaRDD._1().getContinent(),tuplaRDD._1().getWeekYear(),tuplaRDD._1().getTrendCoefficient());
+                    ContinentWeekKey newKey = new ContinentWeekKey(tuplaRDD._1().getContinent(),tuplaRDD._1().getWeekYear());
                     Tuple2<ContinentWeekKey, Tuple2<String, Double>> exploted = new Tuple2<>(newKey, tupla);
                     tupleList.add(exploted);
                 }
@@ -165,7 +160,7 @@ public class SecondQuery {
                     Double max = x._2().max();
                     return new Tuple2<>(key, new Tuple4<>(mean, dev, min, max));
                 })
-                .sortByKey(new FinalResultComparator(),false);
+                .sortByKey();
 
 
 
@@ -175,7 +170,9 @@ public class SecondQuery {
             if (hdfs.exists(path)) {
                 hdfs.delete(path, true);
             }
-            statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath);
+
+            statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery");
+            top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/TOP100");
             context.close();
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,31 +1,41 @@
 package model;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.io.Serializable;
-import java.util.Comparator;
+import java.util.Objects;
 
-@Data @EqualsAndHashCode
+@Data
 public class ContinentWeekKey implements Serializable, Comparable<ContinentWeekKey> {
 
     String continent;
     String weekYear;
-    double trendCoefficient;
 
 
-    public ContinentWeekKey( String continent, String weekYear,double trendCoefficient) {
+    public ContinentWeekKey( String continent, String weekYear) {
         this.continent = continent;
         this.weekYear = weekYear;
-        this.trendCoefficient = trendCoefficient;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ContinentWeekKey that = (ContinentWeekKey) o;
+        return continent.equals(that.continent) &&
+                weekYear.equals(that.weekYear);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(continent, weekYear);
     }
 
 
     @Override
     public int compareTo(ContinentWeekKey o) {
-        int c = this.weekYear.compareTo(o.weekYear);
+        int c = this.continent.compareTo(o.continent);
         if(c  == 0){
-            c = this.continent.compareTo(o.continent);
+           c = this.weekYear.compareTo(o.weekYear);
         }
         return c;
     }
