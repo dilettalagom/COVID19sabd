@@ -48,7 +48,7 @@ execute_query() {
     
     #show results in hdfs
     hdfs dfs -ls /results/secondQuery
-    hdfs dfs -cat /results/secondQuery/part-00000
+    hdfs dfs -cat /results/secondQuery/part-00000 > results.csv
 
   elif [ $q = 3 ]
   then

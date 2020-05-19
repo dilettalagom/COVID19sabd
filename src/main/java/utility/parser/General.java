@@ -33,6 +33,7 @@ public class General {
                 .toFormatter();
         TemporalAccessor dt = FMT.parseBest(date, LocalDateTime::from, LocalDate::from);
         YearWeek yw = YearWeek.from(dt);
+        //System.out.println(yw.toString());
         return yw.toString();
     }
 

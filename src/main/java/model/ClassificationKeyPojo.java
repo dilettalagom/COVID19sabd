@@ -1,7 +1,6 @@
 package model;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -16,13 +15,23 @@ public class ClassificationKeyPojo implements Serializable {
     String weekYear;
 
 
-    public ClassificationKeyPojo( double trendCoefficient, String state, String country, String continent) {
+    public ClassificationKeyPojo(double trendCoefficient, String state, String country, String continent, String weekYear) {
         this.trendCoefficient = trendCoefficient;
         this.state = state;
         this.country = country;
         this.continent = continent;
-
+        this.weekYear = weekYear;
     }
+
+    public ClassificationKeyPojo(double trendCoefficient, String state, String country, String continent) {
+        this.trendCoefficient = trendCoefficient;
+        this.state = state;
+        this.country = country;
+        this.continent = continent;
+        //this.weekYear = "";
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
@@ -46,6 +55,7 @@ public class ClassificationKeyPojo implements Serializable {
         return "trendCoefficient= '" + trendCoefficient+ '\'' +
                 ", state= '" + state + '\'' +
                 ", country= '" + country + '\'' +
-                ", continent= '" + continent;
+                ", continent= '" + continent +
+                "weekYear= " + weekYear;
     }
 }

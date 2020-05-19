@@ -27,6 +27,7 @@ public class NationalWeekKey implements Serializable, Comparable<NationalWeekKey
         this.WeekYear = createKeyYearMonth(dateStart);
     }
 
+
     public static String createKeyYearMonth(String date){
 
         DateTimeFormatter FMT = new DateTimeFormatterBuilder()

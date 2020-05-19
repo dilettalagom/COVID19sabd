@@ -113,7 +113,7 @@ public class KeyAccumulator implements Serializable {
             @Override
             public List<Tuple2<String, Double>> call(List<Tuple2<String, Double>> v1, Tuple2<String, Double> v2) throws Exception {
                 v1.add(v2);
-                //Collections.sort(v1,customComparator.reversed());
+                Collections.sort(v1, customComparator.reversed());
                 return v1;
             }
         };
@@ -128,7 +128,7 @@ public class KeyAccumulator implements Serializable {
             @Override
             public List<Tuple2<String, Double>> call(List<Tuple2<String, Double>> v1, List<Tuple2<String, Double>> v2) throws Exception {
                 v1.addAll(v2);
-                //Collections.sort(v1,customComparator.reversed());
+                Collections.sort(v1,customComparator.reversed());
                 return v1;
             }
         };

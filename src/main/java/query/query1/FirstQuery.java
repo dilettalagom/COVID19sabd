@@ -10,8 +10,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
-import utility.parser.CalendarUtility;
-
 import java.io.IOException;
 
 
@@ -48,8 +46,6 @@ public class FirstQuery {
                 (acc, x) -> acc.merge(x.getNumHealed()),
                 (acc1, acc2) -> acc1.merge(acc2)
         )
-
-                //Key = NationalWeekKey, Value = Tuple4<mean, std, min, max>
                 .mapToPair(x -> {
                     NationalWeekKey nationalWeekKey = x._1();
                     Double mean = x._2().mean();
@@ -62,7 +58,6 @@ public class FirstQuery {
                 (acc, x) -> acc.merge(x.getNumTampons()),
                 StatCounter::merge
         )
-                //Key = Tuple3<Country, year, month>, Value = Tuple4<mean, std, min, max>
                 .mapToPair(x -> {
                     NationalWeekKey nationalWeekKey = x._1();
                     Double mean = x._2().mean();
