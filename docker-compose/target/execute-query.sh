@@ -27,7 +27,7 @@ execute_query() {
     
     #query submit
     $SPARK_HOME/bin/spark-submit \
-    --class query.query1.FirstQuery \
+    --class query.FirstQuery \
     --master "local" \
     /target/jar/COVID19sabd-1.0-SNAPSHOT.jar
 
@@ -41,7 +41,7 @@ execute_query() {
     
     #query submit
     $SPARK_HOME/bin/spark-submit \
-    --class query.query2.SecondQuery \
+    --class query.SecondQuery \
     --master "local" \
     /target/jar/COVID19sabd-1.0-SNAPSHOT.jar --num-executors 1 --executor-cores 1 \
     --conf "spark.executor.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=n,address=mbp-di-giorgia.homenet.telecomitalia.it:43211,suspend=y,onthrow=<FQ exception class name>,onuncaught=<y/n>"
@@ -59,6 +59,12 @@ execute_query() {
     --class query.ThirdQuery \
     --master "local" \
     /target/jar/COVID19sabd-1.0-SNAPSHOT.jar
+
+    hdfs dfs -ls /results/thirdQuery
+    #hdfs dfs -cat /results/thirdQuery/part-00000 > query3.csv
+    hdfs dfs -cat /results/TOP50/part-00000 > top50.csv
+
+
   else
     wrong_query_name
   fi

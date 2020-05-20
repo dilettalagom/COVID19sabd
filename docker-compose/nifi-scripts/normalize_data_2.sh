@@ -12,11 +12,10 @@ geo_infos = df1.iloc[:, :4]
 continent = df1['Continent']
 subset = (df1.iloc[:, 4:-1]).astype(float)
 header_subset = list(subset.columns.values)
-
 sub = subset.to_numpy()
 
 # find indexes of elements not in monotonic order
-indexes_to_rectify = np.argwhere((sub[:, 1:] >= sub[:, :-1]) == False)    
+indexes_to_rectify = np.argwhere((sub[:, 1:] >= sub[:, :-1]) == False)
 #per sapere quante righe correggere eseguire  print(len(indexes_to_rectify))
 
 # substitute wrong element with mean of prev and next value
@@ -34,7 +33,7 @@ for i in indexes_to_rectify:
 diff = np.diff(sub)
 
 # rebuild csv
-total_diff_np = np.concatenate((sub[:, :1], diff), axis=1)
+total_diff_np = np.concatenate((sub[:, :1], diff), axis=1) #attach first column
 total_diff_df = pd.DataFrame(data=(total_diff_np[0:, 0:]), columns=header_subset)
 total_data_df = pd.concat([geo_infos, continent, total_diff_df], axis=1, join='inner')
 

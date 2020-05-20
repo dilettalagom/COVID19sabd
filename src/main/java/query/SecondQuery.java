@@ -1,7 +1,7 @@
-package query.query2;
+package query;
 
 
-import model.ClassificationKeyPojo;
+import model.ClassificationWeekYearPojo;
 import model.ContinentWeekKey;
 import model.GlobalStatisticsPojo;
 import org.apache.hadoop.fs.FileSystem;
@@ -39,7 +39,6 @@ public class SecondQuery {
         JavaRDD<String> csvData = context.textFile(datasetPath);
         String csvHeader = csvData.first();
         String[] headerSplitted = csvHeader.split(",");
-        System.out.println(headerSplitted[0]);
         JavaRDD<String> nonHeaderCSV = csvData.filter(row -> !row.equals(csvHeader));
         String[] dates = Arrays.copyOfRange(headerSplitted, 5, headerSplitted.length);
 
@@ -54,7 +53,7 @@ public class SecondQuery {
                     String[] infectedString = Arrays.copyOfRange(lineSplitted, 5, lineSplitted.length);
 
                     GlobalStatisticsPojo pojo = new GlobalStatisticsPojo(state, country, continent, infectedString, dates);
-                    ClassificationKeyPojo key = new ClassificationKeyPojo(pojo.getTrendCoefficient(), state, country, continent);
+                    ClassificationWeekYearPojo key = new ClassificationWeekYearPojo(pojo.getTrendCoefficient(), state, country, continent);
 
 
                     //Query2Key key = new Query2Key(pojo.getContinent(), pojo.getTrendCoefficient());
@@ -67,28 +66,29 @@ public class SecondQuery {
 
 
         // < ClassificationKeyPojo, Tuple2< data, infected> >
-        JavaPairRDD < ClassificationKeyPojo, Tuple2<String,Double>> remappedRDD =
+        JavaPairRDD <ClassificationWeekYearPojo, Tuple2<String,Double>> remappedRDD =
                 top100RDD.flatMapToPair(new PairFlatMapFunction <
-                        Tuple2<ClassificationKeyPojo, GlobalStatisticsPojo>,
-                        ClassificationKeyPojo,Tuple2<String,Double>
+                        Tuple2<ClassificationWeekYearPojo, GlobalStatisticsPojo>,
+                        ClassificationWeekYearPojo,Tuple2<String,Double>
                         >(){
                     @Override
-                    public Iterator< Tuple2< ClassificationKeyPojo, Tuple2<String,Double> >>
-                    call(Tuple2<ClassificationKeyPojo, GlobalStatisticsPojo> tuplaRDD) throws Exception {
+                    public Iterator< Tuple2<ClassificationWeekYearPojo, Tuple2<String,Double> >>
+                    call(Tuple2<ClassificationWeekYearPojo, GlobalStatisticsPojo> tuplaRDD) throws Exception {
 
-                        ArrayList<  Tuple2<ClassificationKeyPojo, Tuple2<String,Double>> >  tupleList = new ArrayList<>();
+                        ArrayList<  Tuple2<ClassificationWeekYearPojo, Tuple2<String,Double>> >  tupleList = new ArrayList<>();
 
                         double[] allInfected = tuplaRDD._2().getInfectedPerDay();
 
                         for (int i=0; i<allInfected.length;i++ ) {
                             String dateString  = tuplaRDD._2().getInfectedDates()[i];
-
                             //update weekYear in Key
-                            String weekYear = General.createKeyYearMonth(dateString);
+                            String weekYear = General.createKeyWeekYear(dateString);
 
-                            ClassificationKeyPojo newOne = new ClassificationKeyPojo(tuplaRDD._1().getTrendCoefficient(), tuplaRDD._1().getState(), tuplaRDD._1().getCountry(),tuplaRDD._1().getContinent(),weekYear);
+                            ClassificationWeekYearPojo newOne = new ClassificationWeekYearPojo(tuplaRDD._1().getTrendCoefficient(),
+                                                                                                tuplaRDD._1().getState(), tuplaRDD._1().getCountry(),
+                                                                                                tuplaRDD._1().getContinent(),weekYear);
                             //refactor RDD elements
-                            Tuple2<ClassificationKeyPojo, Tuple2<String,Double>> temp =
+                            Tuple2<ClassificationWeekYearPojo, Tuple2<String,Double>> temp =
                                     new Tuple2<>(newOne,
                                             new Tuple2<>( dateString, allInfected[i] ));
                             tupleList.add(temp);
@@ -96,6 +96,7 @@ public class SecondQuery {
                         return tupleList.iterator();
                     }
                 });
+
 
 
         //Create custom-accumulator instance and its methods.
@@ -113,20 +114,20 @@ public class SecondQuery {
 
 
         //Key is ClassificationKeyPojo, value is List<weekYear, infected>
-        JavaPairRDD<ClassificationKeyPojo, List<Tuple2<String, Double>>> combinedClassificationRDD =
+        JavaPairRDD<ClassificationWeekYearPojo, List<Tuple2<String, Double>>> combinedClassificationRDD =
                 remappedRDD.combineByKey(createAccumulator, mergeOneValueAcc, mergeObjectsAcc);
 
 
 
 
         JavaPairRDD<ContinentWeekKey, Tuple2<String, Double>> classificationKeyPojoTuple2JavaPairRDD = combinedClassificationRDD.flatMapToPair(new PairFlatMapFunction<
-                Tuple2<ClassificationKeyPojo, List<Tuple2<String, Double>>>,
+                Tuple2<ClassificationWeekYearPojo, List<Tuple2<String, Double>>>,
                 ContinentWeekKey, Tuple2<String, Double>
                 >() {
             @Override
             public Iterator<Tuple2<ContinentWeekKey, Tuple2<String, Double>>>
 
-            call(Tuple2<ClassificationKeyPojo, List<Tuple2<String, Double>>> tuplaRDD) throws Exception {
+            call(Tuple2<ClassificationWeekYearPojo, List<Tuple2<String, Double>>> tuplaRDD) throws Exception {
 
                 ArrayList<Tuple2<ContinentWeekKey, Tuple2<String, Double>>> tupleList = new ArrayList<>();
 
@@ -171,8 +172,8 @@ public class SecondQuery {
             if (hdfs.exists(path)) {
                 hdfs.delete(path, true);
             }
-            statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery");
-            top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/TOP100");
+            statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/thirdQuery");
+            top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/TOP50");
             context.close();
         } catch (IOException e) {
             e.printStackTrace();

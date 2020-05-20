@@ -1,4 +1,4 @@
-package query.query1;
+package query;
 
 import model.NationalStatisticsPojo;
 import model.NationalWeekKey;

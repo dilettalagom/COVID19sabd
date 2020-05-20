@@ -22,7 +22,6 @@ public class KeyAccumulator implements Serializable {
                 List<Tuple2<String,Double>> list = new ArrayList<>();
                 list.add(x);
                 return list;
-                //return new ArrayList<>();
             }
         };
         return createAcc;

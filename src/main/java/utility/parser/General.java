@@ -3,6 +3,7 @@ package utility.parser;
 import org.threeten.extra.YearWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
@@ -25,9 +26,7 @@ public class General {
 
     }
 
-    public static String createKeyYearMonth(String date) {
-
-
+    public static String createKeyWeekYear(String date) {
         DateTimeFormatter FMT = new DateTimeFormatterBuilder()
                 .appendOptional(DateTimeFormatter.ofPattern("M/d/yy"))
                 .toFormatter();
@@ -36,5 +35,17 @@ public class General {
         //System.out.println(yw.toString());
         return yw.toString();
     }
+
+
+    public static String createKeyYearMonth(String date) {
+        DateTimeFormatter FMT = new DateTimeFormatterBuilder()
+                .appendOptional(DateTimeFormatter.ofPattern("M/d/yy"))
+                .toFormatter();
+        TemporalAccessor dt = FMT.parseBest(date, LocalDateTime::from, LocalDate::from);
+        YearMonth ym = YearMonth.from(dt);
+        return ym.toString();
+    }
+
+
 
 }

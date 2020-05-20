@@ -6,7 +6,7 @@ import java.util.Objects;
 
 
 @Data
-public class ClassificationKeyPojo implements Serializable {
+public class ClassificationWeekYearPojo implements Serializable {
 
     double trendCoefficient;
     String state;
@@ -15,7 +15,7 @@ public class ClassificationKeyPojo implements Serializable {
     String weekYear;
 
 
-    public ClassificationKeyPojo(double trendCoefficient, String state, String country, String continent, String weekYear) {
+    public ClassificationWeekYearPojo(double trendCoefficient, String state, String country, String continent, String weekYear) {
         this.trendCoefficient = trendCoefficient;
         this.state = state;
         this.country = country;
@@ -23,7 +23,7 @@ public class ClassificationKeyPojo implements Serializable {
         this.weekYear = weekYear;
     }
 
-    public ClassificationKeyPojo(double trendCoefficient, String state, String country, String continent) {
+    public ClassificationWeekYearPojo(double trendCoefficient, String state, String country, String continent) {
         this.trendCoefficient = trendCoefficient;
         this.state = state;
         this.country = country;
@@ -37,7 +37,7 @@ public class ClassificationKeyPojo implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ClassificationKeyPojo that = (ClassificationKeyPojo) o;
+        ClassificationWeekYearPojo that = (ClassificationWeekYearPojo) o;
         return Double.compare(that.trendCoefficient, trendCoefficient) == 0 &&
                 Objects.equals(state, that.state) &&
                 country.equals(that.country) &&
@@ -56,6 +56,6 @@ public class ClassificationKeyPojo implements Serializable {
                 ", state= '" + state + '\'' +
                 ", country= '" + country + '\'' +
                 ", continent= '" + continent + '\'' +
-                "weekYear= '" + weekYear;
+                ", weekYear= '" + weekYear;
     }
 }
