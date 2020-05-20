@@ -85,7 +85,6 @@ public class SecondQuery {
 
                             //update weekYear in Key
                             String weekYear = General.createKeyYearMonth(dateString);
-                            //tuplaRDD._1().setWeekYear(weekYear);
 
                             ClassificationKeyPojo newOne = new ClassificationKeyPojo(tuplaRDD._1().getTrendCoefficient(), tuplaRDD._1().getState(), tuplaRDD._1().getCountry(),tuplaRDD._1().getContinent(),weekYear);
                             //refactor RDD elements
@@ -119,6 +118,7 @@ public class SecondQuery {
 
 
 
+
         JavaPairRDD<ContinentWeekKey, Tuple2<String, Double>> classificationKeyPojoTuple2JavaPairRDD = combinedClassificationRDD.flatMapToPair(new PairFlatMapFunction<
                 Tuple2<ClassificationKeyPojo, List<Tuple2<String, Double>>>,
                 ContinentWeekKey, Tuple2<String, Double>
@@ -140,6 +140,8 @@ public class SecondQuery {
                 return tupleList.iterator();
             }
         });
+
+
 
         JavaPairRDD statisticsGlobalRDD = classificationKeyPojoTuple2JavaPairRDD
 

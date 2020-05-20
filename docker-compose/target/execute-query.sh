@@ -48,7 +48,7 @@ execute_query() {
     
     #show results in hdfs
     hdfs dfs -ls /results/secondQuery
-    hdfs dfs -cat /results/secondQuery/part-00000 > query2result.csv
+    hdfs dfs -cat /results/secondQuery/part-00000 > statisticsGlobalRDD.csv
     hdfs dfs -cat /results/TOP100/part-00000 > top100.csv
 
 

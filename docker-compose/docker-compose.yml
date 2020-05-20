@@ -59,23 +59,23 @@ services:
    tty: true
    command: bash -c "sh start-services.sh"
 
- worker3:
-   image: dilettalagom/spark-hdfs-node
-   container_name: worker3
-   hostname: worker3
-   networks:
-     - app_network
-   ports:
-     - "9863:9861"
-   depends_on:
-     - master
-   volumes:
-     - ./target:/target
-   stdin_open: true
-   tty: true
-   command: bash -c "sh start-services.sh"
+  worker3:
+    image: dilettalagom/spark-hdfs-node
+    container_name: worker3
+    hostname: worker3
+    networks:
+      - app_network
+    ports:
+       - "9863:9861"
+    depends_on:
+      - master
+    volumes:
+      - ./target:/target
+    stdin_open: true
+    tty: true
+    command: bash -c "sh start-services.sh"
 
- zookeeper:
+  zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
     hostname: zookeeper

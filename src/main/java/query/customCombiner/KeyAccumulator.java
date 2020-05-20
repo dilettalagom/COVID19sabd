@@ -19,7 +19,10 @@ public class KeyAccumulator implements Serializable {
         Function<Tuple2<String, Double>, List<Tuple2<String, Double>>> createAcc = new Function<Tuple2<String, Double>, List<Tuple2<String, Double>>>() {
             @Override
             public List<Tuple2<String, Double>> call(Tuple2<String, Double> x) {
-                return new ArrayList<>();
+                List<Tuple2<String,Double>> list = new ArrayList<>();
+                list.add(x);
+                return list;
+                //return new ArrayList<>();
             }
         };
         return createAcc;
