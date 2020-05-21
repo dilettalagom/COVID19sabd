@@ -47,9 +47,9 @@ execute_query() {
     --conf "spark.executor.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=n,address=mbp-di-giorgia.homenet.telecomitalia.it:43211,suspend=y,onthrow=<FQ exception class name>,onuncaught=<y/n>"
     
     #show results in hdfs
-    hdfs dfs -ls /results/secondQuery
-    hdfs dfs -cat /results/secondQuery/part-00000 > statisticsGlobalRDD.csv
-    hdfs dfs -cat /results/TOP100/part-00000 > top100.csv
+    #hdfs dfs -ls /results/secondQuery
+    hdfs dfs -cat /results/secondQuery/part-00000 > result.csv
+    #hdfs dfs -cat /results/TOP100/part-00000 > top100.csv
 
 
   elif [ $q = 3 ]

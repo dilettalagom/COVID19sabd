@@ -11,7 +11,7 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
     String monthYear;
     String state;
     String country;
-    Double trendMonth;
+    double trendMonth;
 
 
     public ClassificationMonthPojo(String state, String country) {
@@ -26,7 +26,7 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
         this.country = country;
     }
 
-    public ClassificationMonthPojo(String monthYear, String state, String country, Double trendMonth) {
+    public ClassificationMonthPojo(String monthYear, String state, String country, double trendMonth) {
         this.monthYear = monthYear;
         this.state = state;
         this.country = country;
@@ -46,7 +46,7 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
 
     @Override
     public int hashCode() {
-        return Objects.hash(trendMonth, state, country, monthYear);
+        return Objects.hash(trendMonth, monthYear, state, country);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
     @Override
     public int compareTo(ClassificationMonthPojo o) {
         int c = (new Double(this.trendMonth)).compareTo(new Double(o.trendMonth));
-        if(c == 0){
+        if( c == 0){
             c = this.monthYear.compareTo(o.monthYear);
         }
         return c;

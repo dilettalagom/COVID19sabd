@@ -26,7 +26,7 @@ import java.util.*;
 public class SecondQuery {
 
 
-    private static String datasetPath = "hdfs://master:54310/dataset/covid19_global.csv";
+    private static String datasetPath = "hdfs://master:54310/dataset/global_nifi_clean.csv";
     private static String resultSecondQueryPath = "hdfs://master:54310/results";
 
     public static void main(String[] args) {
@@ -100,56 +100,49 @@ public class SecondQuery {
 
 
         //Create custom-accumulator instance and its methods.
-        KeyAccumulator accumulator = new KeyAccumulator();
-        Function<Tuple2<String,Double>,
-                List<Tuple2<String,Double>>> createAccumulator = accumulator.createAccumulator();
-
-        Function2< List< Tuple2<String, Double> >,
-                Tuple2<String, Double>,
-                List<Tuple2<String, Double>>> mergeOneValueAcc = accumulator.createMergeOneValueAcc();
-
-        Function2< List<Tuple2<String, Double> >,
-                List<Tuple2<String, Double> >,
-                List<Tuple2<String, Double>> > mergeObjectsAcc = accumulator.createMergeObjectsAcc();
+        JavaPairRDD<ClassificationWeekYearPojo, Double> bazukaRDD = AntBazuka(remappedRDD);
 
 
-        //Key is ClassificationKeyPojo, value is List<weekYear, infected>
-        JavaPairRDD<ClassificationWeekYearPojo, List<Tuple2<String, Double>>> combinedClassificationRDD =
-                remappedRDD.combineByKey(createAccumulator, mergeOneValueAcc, mergeObjectsAcc);
-
-
-
-
-        JavaPairRDD<ContinentWeekKey, Tuple2<String, Double>> classificationKeyPojoTuple2JavaPairRDD = combinedClassificationRDD.flatMapToPair(new PairFlatMapFunction<
-                Tuple2<ClassificationWeekYearPojo, List<Tuple2<String, Double>>>,
-                ContinentWeekKey, Tuple2<String, Double>
-                >() {
-            @Override
-            public Iterator<Tuple2<ContinentWeekKey, Tuple2<String, Double>>>
-
-            call(Tuple2<ClassificationWeekYearPojo, List<Tuple2<String, Double>>> tuplaRDD) throws Exception {
-
-                ArrayList<Tuple2<ContinentWeekKey, Tuple2<String, Double>>> tupleList = new ArrayList<>();
-
-                for (Tuple2<String, Double> tupla : tuplaRDD._2()) {
-
-                    ContinentWeekKey newKey = new ContinentWeekKey(tuplaRDD._1().getContinent(),tuplaRDD._1().getWeekYear());
-                    Tuple2<ContinentWeekKey, Tuple2<String, Double>> exploted = new Tuple2<>(newKey, tupla);
-                    tupleList.add(exploted);
+        JavaPairRDD<ContinentWeekKey,Double> continentWeekRDD = bazukaRDD.mapToPair(
+                t -> {
+                    ContinentWeekKey newKey = new ContinentWeekKey(t._1().getContinent(), t._1().getWeekYear());
+                    return new Tuple2(newKey, t._2);
                 }
-
-                return tupleList.iterator();
-            }
-        });
+        );
 
 
 
-        JavaPairRDD statisticsGlobalRDD = classificationKeyPojoTuple2JavaPairRDD
+//
+//        JavaPairRDD<ContinentWeekKey, Double> classificationKeyPojoTuple2JavaPairRDD = combinedClassificationRDD.flatMapToPair(new PairFlatMapFunction<
+//                Tuple2<ClassificationWeekYearPojo, List<Tuple2<String, Double>>>,
+//                ContinentWeekKey, Tuple2<String, Double>
+//                >() {
+//            @Override
+//            public Iterator<Tuple2<ContinentWeekKey, Tuple2<String, Double>>>
+//
+//            call(Tuple2<ClassificationWeekYearPojo, List<Tuple2<String, Double>>> tuplaRDD) throws Exception {
+//
+//                ArrayList<Tuple2<ContinentWeekKey, Tuple2<String, Double>>> tupleList = new ArrayList<>();
+//
+//                for (Tuple2<String, Double> tupla : tuplaRDD._2()) {
+//
+//                    ContinentWeekKey newKey = new ContinentWeekKey(tuplaRDD._1().getContinent(),tuplaRDD._1().getWeekYear());
+//                    Tuple2<ContinentWeekKey, Tuple2<String, Double>> exploted = new Tuple2<>(newKey, tupla);
+//                    tupleList.add(exploted);
+//                }
+//
+//                return tupleList.iterator();
+//            }
+//        });
+//
+//
+//
+        JavaPairRDD statisticsGlobalRDD = continentWeekRDD
 
                 //Value = infected x weekYear x continent
                 .aggregateByKey(
                         new StatCounter(),
-                        (acc, x) -> acc.merge(x._2()),
+                        (acc, x) -> acc.merge(x),
                         StatCounter::merge
                 )
 
@@ -172,14 +165,26 @@ public class SecondQuery {
             if (hdfs.exists(path)) {
                 hdfs.delete(path, true);
             }
-            statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/thirdQuery");
-            top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/TOP50");
+            statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery");
+            //top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/TOP50");
             context.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
 
+    }
+
+    private static JavaPairRDD<ClassificationWeekYearPojo, Double> AntBazuka(JavaPairRDD<ClassificationWeekYearPojo, Tuple2<String, Double>> remappedRDD) {
+        KeyAccumulator accumulator = new KeyAccumulator();
+        Function<Tuple2<String, Double>, Double> createAccumulator = accumulator.createAccumulator();
+
+        Function2<Double, Tuple2<String, Double>, Double> mergeOneValueAcc = accumulator.createMergeOneValueAcc();
+
+        Function2<Double, Double, Double> mergeObjectsAcc = accumulator.createMergeObjectsAcc();
+
+        //Key is ClassificationKeyPojo, value is List<weekYear, infected>
+        return remappedRDD.combineByKey(createAccumulator, mergeOneValueAcc, mergeObjectsAcc);
     }
 
 }

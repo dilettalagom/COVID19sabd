@@ -15,27 +15,23 @@ public class KeyAccumulator implements Serializable {
     static WeekyearContinentComparator customComparator = new WeekyearContinentComparator();
 
 
-    public  Function<Tuple2<String, Double>, List<Tuple2<String, Double>>> createAccumulator() {
-        Function<Tuple2<String, Double>, List<Tuple2<String, Double>>> createAcc = new Function<Tuple2<String, Double>, List<Tuple2<String, Double>>>() {
+    public  Function<Tuple2<String, Double>, Double> createAccumulator() {
+        Function<Tuple2<String, Double>, Double> createAcc = new Function<Tuple2<String, Double>, Double>() {
             @Override
-            public List<Tuple2<String, Double>> call(Tuple2<String, Double> x) {
-                List<Tuple2<String,Double>> list = new ArrayList<>();
-                list.add(x);
-                return list;
+            public Double call(Tuple2<String, Double> x) {
+                return x._2();
             }
         };
         return createAcc;
     }
 
 
-    public Function2<List<Tuple2<String, Double>>, Tuple2<String, Double>, List<Tuple2<String, Double>>> createMergeOneValueAcc() {
-        Function2<List<Tuple2<String, Double>>, Tuple2<String, Double>, List<Tuple2<String, Double>>>
-                mergeOneValueAcc = new Function2<List<Tuple2<String, Double>>, Tuple2<String, Double>, List<Tuple2<String, Double>>>() {
+    public Function2<Double, Tuple2<String, Double>, Double> createMergeOneValueAcc() {
+        Function2<Double, Tuple2<String, Double>, Double>
+                mergeOneValueAcc = new Function2<Double, Tuple2<String, Double>, Double>() {
             @Override
-            public List<Tuple2<String, Double>> call(List<Tuple2<String, Double>> v1, Tuple2<String, Double> v2) throws Exception {
-                v1.add(v2);
-                Collections.sort(v1, customComparator.reversed());
-                return v1;
+            public Double call(Double v1, Tuple2<String, Double> v2) throws Exception {
+                return v1 + v2._2();
             }
         };
         return mergeOneValueAcc;
@@ -43,15 +39,13 @@ public class KeyAccumulator implements Serializable {
     }
 
 
-    public Function2<List<Tuple2<String, Double>>, List<Tuple2<String, Double>>, List<Tuple2<String, Double>>> createMergeObjectsAcc() {
+    public Function2<Double, Double, Double> createMergeObjectsAcc() {
 
-        Function2<List<Tuple2<String, Double>>,List<Tuple2<String, Double>>,List<Tuple2<String, Double>>> mergeObjectsAcc
-                = new Function2<List<Tuple2<String, Double>>, List<Tuple2<String, Double>>, List<Tuple2<String, Double>>>() {
+        Function2<Double, Double, Double> mergeObjectsAcc
+                = new Function2<Double, Double, Double>() {
             @Override
-            public List<Tuple2<String, Double>> call(List<Tuple2<String, Double>> v1, List<Tuple2<String, Double>> v2) throws Exception {
-                v1.addAll(v2);
-                Collections.sort(v1,customComparator.reversed());
-                return v1;
+            public Double call(Double v1, Double v2) throws Exception {
+                return v1 + v2;
             }
         };
         return mergeObjectsAcc;

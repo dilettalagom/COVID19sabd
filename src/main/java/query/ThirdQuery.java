@@ -1,29 +1,29 @@
 package query;
 
+import com.google.common.collect.Iterables;
 import model.ClassificationMonthPojo;
 import model.GlobalStatisticsPojo;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.spark.HashPartitioner;
+import org.apache.spark.Partition;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
-import query.customCombiner.KeyAccumulator;
-import query.customCombiner.TrendMonthComparator;
+import query.customCombiner.MonthYearTrendComparator;
 import scala.Tuple2;
+import utility.ClassificMonthPartitioner;
 import utility.TrendCalculator;
 import utility.parser.General;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
 
 public class ThirdQuery {
 
-    private static String datasetPath = "hdfs://master:54310/dataset/covid19_global.csv";
+    private static String datasetPath = "hdfs://master:54310/dataset/global_nifi_clean.csv";
     private static String resultsThirdQueryPath = "hdfs://master:54310/results";
     private static TrendCalculator trendCalculator = new TrendCalculator();
 
@@ -56,6 +56,7 @@ public class ThirdQuery {
                     return new Tuple2(key, pojo);
                 }).cache();
 
+
         // < ClassificationMonthPojo, Tuple2< data, infected> >
         JavaPairRDD <ClassificationMonthPojo, Tuple2<String,Double>> remappedRDD =
                 splittedRDD.flatMapToPair(new PairFlatMapFunction <
@@ -84,45 +85,57 @@ public class ThirdQuery {
                     }
                 });
 
+//
+//        JavaRDD<ClassificationMonthPojo> trendRDD = remappedRDD.groupByKey().map(
+//                x -> {
+//                    int size = Iterables.size(x._2());
+//                    TrendCalculator trend = new TrendCalculator();
+//                    double[] y = new double[size];
+//                    for (int i = 0; i < size; i++) {
+//                        y[i] = (Iterables.get(x._2, i))._2();
+//                    }
+//                    double trendCoefficient = trend.getTrendCoefficient(y);
+//                    ClassificationMonthPojo pojo = new ClassificationMonthPojo(x._1.getMonthYear(), x._1.getState(), x._1.getCountry(), trendCoefficient);
+//                    return pojo;
+//                }
+//        );
 
-        KeyAccumulator accumulator = new KeyAccumulator();
-        Function<Tuple2<String,Double>,
-                List<Tuple2<String,Double>>> createAccumulator = accumulator.createAccumulator();
 
-        Function2< List< Tuple2<String, Double> >,
-                Tuple2<String, Double>,
-                List<Tuple2<String, Double>>> mergeOneValueAcc = accumulator.createMergeOneValueAcc();
-
-        Function2< List<Tuple2<String, Double> >,
-                List<Tuple2<String, Double> >,
-                List<Tuple2<String, Double>> > mergeObjectsAcc = accumulator.createMergeObjectsAcc();
-
-
-        //Key is ClassificationKeyPojo, value is List<weekYear, infected>
-        JavaPairRDD<ClassificationMonthPojo, List<Tuple2<String, Double>>> combinedClassificationRDD =
-                remappedRDD.combineByKey(createAccumulator, mergeOneValueAcc, mergeObjectsAcc);
-
-        JavaRDD<ClassificationMonthPojo> remappedRDD2 =
-                combinedClassificationRDD.flatMap(new FlatMapFunction<Tuple2<ClassificationMonthPojo, List<Tuple2<String, Double>>>, ClassificationMonthPojo>() {
-                    @Override
-                    public Iterator<ClassificationMonthPojo> call(Tuple2<ClassificationMonthPojo, List<Tuple2<String, Double>>> list) throws Exception {
-
-                        ArrayList<ClassificationMonthPojo> result = new ArrayList<>();
-
-                        double[] set = new double[list._2.size()];
-                        for(int i = 0; i < list._2().size(); i++){
-                            set[i] = list._2().get(i)._2;
-                        }
-                        double trend = trendCalculator.getTrendCoefficient(set);
-                        ClassificationMonthPojo classificationMonthPojo = new ClassificationMonthPojo(list._1.getMonthYear(),list._1.getState(),list._1.getCountry(), trend);
-                        result.add(classificationMonthPojo);
-                        return result.iterator();
+        JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo> trendRDD = remappedRDD.groupByKey().mapToPair(
+                x -> {
+                    int size = Iterables.size(x._2());
+                    TrendCalculator trend = new TrendCalculator();
+                    double[] y = new double[size];
+                    for (int i = 0; i < size; i++) {
+                        y[i] = (Iterables.get(x._2, i))._2();
                     }
-                });
+                    double trendCoefficient = trend.getTrendCoefficient(y);
+                    ClassificationMonthPojo pojo = new ClassificationMonthPojo(x._1.getMonthYear(), x._1.getState(), x._1.getCountry(), trendCoefficient);
+                    return new Tuple2(new Tuple2(pojo.getMonthYear(),trendCoefficient),pojo);
+                }
+        );
 
-        //List<ClassificationMonthPojo> take = remappedRDD2.
-        //JavaRDD<ClassificationMonthPojo> top50RDD = context.parallelize(take);
+        List<String> listKeys = trendRDD.keyBy(x -> x._1._1).keys().collect();
+        int numPart = (int) listKeys.stream().distinct().count();
 
+        //trendRDD.repartitionAndSortWithinPartitions(new ClassificMonthPartitioner(listKeys, numPart), new MonthYearTrendComparator()
+             //   .reversed());
+
+        List<List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>> top50List = new ArrayList<>();
+        trendRDD.partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
+                .sortByKey(new MonthYearTrendComparator(), false)
+                .foreachPartition( x -> {
+                        List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> listPart = new ArrayList<>();
+                        while (x.hasNext()) {
+                            listPart.add(x.next());
+                        }
+                        top50List.add(context.parallelize(listPart).take(50));
+        });
+
+        JavaRDD<List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>> top50RDD = context.parallelize(top50List);
+
+
+        //context.parallelize(top);
 
         try {
             FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
@@ -131,7 +144,7 @@ public class ThirdQuery {
                 hdfs.delete(path, true);
             }
             //statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/thirdQuery");
-            remappedRDD2.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50");
+            top50RDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50");
             context.close();
         } catch (IOException e) {
             e.printStackTrace();
