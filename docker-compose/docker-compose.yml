@@ -91,6 +91,8 @@ services:
       context: ../docker-images/nifi-node
     image: dilettalagom/nifi
     container_name: nifi
+    depends_on:
+      - master
     hostname: nifi
     networks:
       - app_network

@@ -12,6 +12,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
+import org.apache.spark.sql.Encoders;
 import query.customCombiner.MonthYearTrendComparator;
 import scala.Tuple2;
 import utility.ClassificMonthPartitioner;
@@ -85,20 +86,6 @@ public class ThirdQuery {
                     }
                 });
 
-//
-//        JavaRDD<ClassificationMonthPojo> trendRDD = remappedRDD.groupByKey().map(
-//                x -> {
-//                    int size = Iterables.size(x._2());
-//                    TrendCalculator trend = new TrendCalculator();
-//                    double[] y = new double[size];
-//                    for (int i = 0; i < size; i++) {
-//                        y[i] = (Iterables.get(x._2, i))._2();
-//                    }
-//                    double trendCoefficient = trend.getTrendCoefficient(y);
-//                    ClassificationMonthPojo pojo = new ClassificationMonthPojo(x._1.getMonthYear(), x._1.getState(), x._1.getCountry(), trendCoefficient);
-//                    return pojo;
-//                }
-//        );
 
 
         JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo> trendRDD = remappedRDD.groupByKey().mapToPair(
@@ -115,27 +102,26 @@ public class ThirdQuery {
                 }
         );
 
-        List<String> listKeys = trendRDD.keyBy(x -> x._1._1).keys().collect();
-        int numPart = (int) listKeys.stream().distinct().count();
+        List<String> listKeys = trendRDD.keyBy(x -> x._1._1).keys().distinct().collect();
+        int numPart = (int) listKeys.stream().count();
 
-        //trendRDD.repartitionAndSortWithinPartitions(new ClassificMonthPartitioner(listKeys, numPart), new MonthYearTrendComparator()
-             //   .reversed());
+        //JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD = trendRDD.repartitionAndSortWithinPartitions(new ClassificMonthPartitioner(listKeys, numPart), new MonthYearTrendComparator().reversed())
+        //il metodo sopra è equivalente a quello attuale
 
-        List<List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>> top50List = new ArrayList<>();
-        trendRDD.partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
-                .sortByKey(new MonthYearTrendComparator(), false)
-                .foreachPartition( x -> {
-                        List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> listPart = new ArrayList<>();
-                        while (x.hasNext()) {
-                            listPart.add(x.next());
+        JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD = trendRDD.sortByKey(new MonthYearTrendComparator(),false).partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
+                .mapPartitions(new FlatMapFunction<Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>, Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>() {
+                    @Override
+                    public Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> call(Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> it) throws Exception {
+                        List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> filteredResult = new ArrayList<>();
+                        int count = 0;
+                        while (it.hasNext() && count < 50) {
+                            filteredResult.add(it.next());
+                            count++;
                         }
-                        top50List.add(context.parallelize(listPart).take(50));
-        });
+                        return filteredResult.iterator();
+                    }
+                });
 
-        JavaRDD<List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>> top50RDD = context.parallelize(top50List);
-
-
-        //context.parallelize(top);
 
         try {
             FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
@@ -143,11 +129,12 @@ public class ThirdQuery {
             if (hdfs.exists(path)) {
                 hdfs.delete(path, true);
             }
-            //statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/thirdQuery");
             top50RDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50");
             context.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
 }

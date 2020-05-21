@@ -13,6 +13,7 @@ public class ClassificMonthPartitioner extends Partitioner {
 
         public ClassificMonthPartitioner(List<String> months, int i ) {
             this.months = months;
+            System.out.println(months.toString());
             this.numParts = i;
         }
 
@@ -26,13 +27,20 @@ public class ClassificMonthPartitioner extends Partitioner {
         @Override
             public int getPartition(Object key){
             Tuple2<String,Double> newKey = (Tuple2<String,Double>) key;
-            //partition based on the first character of the key...you can have your logic here !!
-            //numParts = months.indexOf(newKey._1);
-            return months.indexOf(newKey._1)%numParts;
+            //int res = (months.indexOf(newKey._1) + 1)%numParts;
+            int res = (months.indexOf(newKey._1))%numParts;
+            return res;
 
         }
 
-        @Override
+        //date2020-05 -> month index: 0 -> res :0
+        //date2020-02 -> month index: 5 -> res :0
+        //date2020-03 -> month index: 1 -> res :1
+        //date2020-04 -> month index: 4 -> res :4
+        //date2020-01 -> month index: 2 -> res :2
+
+
+    @Override
         public boolean equals(Object obj){
             if(obj instanceof ClassificMonthPartitioner)
             {
