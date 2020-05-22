@@ -12,6 +12,7 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
     String state;
     String country;
     double trendMonth;
+    int index;
 
 
     public ClassificationMonthPojo(String state, String country) {
@@ -59,9 +60,9 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
 
     @Override
     public int compareTo(ClassificationMonthPojo o) {
-        int c = (new Double(this.trendMonth)).compareTo(new Double(o.trendMonth));
+        int c = this.monthYear.compareTo(o.monthYear);
         if( c == 0){
-            c = this.monthYear.compareTo(o.monthYear);
+            c = (new Double(this.trendMonth)).compareTo(new Double(o.trendMonth));
         }
         return c;
     }

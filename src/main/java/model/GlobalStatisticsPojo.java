@@ -20,7 +20,6 @@ public class GlobalStatisticsPojo implements Serializable {
     double[] infectedPerDay;
     double trendCoefficient;
 
-    TrendCalculator trendCalculator = new TrendCalculator();
 
 
     public GlobalStatisticsPojo(String state, String nation, String continent, String[] infectedDates, String[] dates) {
@@ -29,7 +28,7 @@ public class GlobalStatisticsPojo implements Serializable {
         this.continent = continent;
         this.infectedDates = dates;
         this.infectedPerDay = this.convert_infectedValues(infectedDates);
-        this.trendCoefficient = trendCalculator.getTrendCoefficient(this.infectedPerDay);
+        this.trendCoefficient = TrendCalculator.getInstance().getTrendCoefficient(this.infectedPerDay);
     }
 
 

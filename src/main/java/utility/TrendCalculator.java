@@ -1,21 +1,28 @@
 package utility;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
-
-
-import javax.inject.Singleton;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
-@Singleton
+
+
 public class TrendCalculator implements Serializable {
 
 
-    private double[] convert_infectedValues(String[] infectedString){
-        return Arrays.stream(infectedString).mapToDouble(Double::parseDouble).toArray();
+    private static TrendCalculator instance = null;
+
+    private TrendCalculator(){
+
     }
 
+    public static TrendCalculator getInstance()
+    {
+        if (instance == null)
+            instance = new TrendCalculator();
+
+        return instance;
+    }
 
     public double getTrendCoefficient(double[] infected){
 

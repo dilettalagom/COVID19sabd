@@ -63,6 +63,11 @@ execute_query() {
     hdfs dfs -ls /results/thirdQuery
     #hdfs dfs -cat /results/thirdQuery/part-00000 > query3.csv
     hdfs dfs -cat /results/TOP50/part-00000 > top50.csv
+    hdfs dfs -cat /results/kmeansmodel_1/part-00000 > kmeansmodel_1.csv
+    hdfs dfs -cat /results/kmeansmodel_2/part-00000 > kmeansmodel_2.csv
+    hdfs dfs -cat /results/kmeansmodel_3/part-00000 > kmeansmodel_3.csv
+    hdfs dfs -cat /results/kmeansmodel_4/part-00000 > kmeansmodel_4.csv
+    hdfs dfs -cat /results/kmeansmodel_5/part-00000 > kmeansmodel_5.csv
 
 
   else

@@ -1,22 +1,20 @@
 package query;
 
 import com.google.common.collect.Iterables;
+import kmeans.KMeansMLibExecutor;
 import model.ClassificationMonthPojo;
 import model.GlobalStatisticsPojo;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.spark.HashPartitioner;
-import org.apache.spark.Partition;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
-import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
 import query.customCombiner.MonthYearTrendComparator;
 import scala.Tuple2;
 import utility.ClassificMonthPartitioner;
-import utility.LinearRegression;
 import utility.TrendCalculator;
 import utility.parser.General;
 import java.io.IOException;
@@ -27,7 +25,6 @@ public class ThirdQuery {
 
     private static String datasetPath = "hdfs://master:54310/dataset/global_nifi_clean.csv";
     private static String resultsThirdQueryPath = "hdfs://master:54310/results";
-    private static TrendCalculator trendCalculator = new TrendCalculator();
 
     public static void main(String[] args) {
 
@@ -99,7 +96,7 @@ public class ThirdQuery {
                             for (int i = 0; i < size; i++) {
                                 y[i] = (Iterables.get(x._2, i))._2();
                             }
-                            double trendCoefficient = new TrendCalculator().getTrendCoefficient(y);
+                            double trendCoefficient = TrendCalculator.getInstance().getTrendCoefficient(y);
                             //TODO:double trendCoefficient = new LinearRegression(y).slope();
                             ClassificationMonthPojo pojo = new ClassificationMonthPojo(x._1.getMonthYear(), x._1.getState(), x._1.getCountry(), trendCoefficient);
                             return new Tuple2(new Tuple2(pojo.getMonthYear(),trendCoefficient),pojo);
@@ -112,20 +109,48 @@ public class ThirdQuery {
         //JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD = trendRDD.repartitionAndSortWithinPartitions(new ClassificMonthPartitioner(listKeys, numPart), new MonthYearTrendComparator().reversed())
         //il metodo sopra è equivalente a quello attuale
 
-        JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD =
-                trendRDD.sortByKey(new MonthYearTrendComparator(),false).partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
-                        .mapPartitions(new FlatMapFunction<Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>, Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>() {
-                            @Override
-                            public Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> call(Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> it) throws Exception {
-                                List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> filteredResult = new ArrayList<>();
-                                int count = 0;
-                                while (it.hasNext() && count < 50) {
-                                    filteredResult.add(it.next());
-                                    count++;
-                                }
-                                return filteredResult.iterator();
-                            }
-                        });
+
+        JavaRDD<ClassificationMonthPojo> top50RDD = trendRDD.sortByKey(new MonthYearTrendComparator(), false).partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
+                .mapPartitions(new FlatMapFunction<Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>, Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>() {
+                    @Override
+                    public Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> call(Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> it) throws Exception {
+                        List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> filteredResult = new ArrayList<>();
+                        int count = 0;
+                        while (it.hasNext() && count < 50) {
+                            Tuple2<Tuple2<String, Double>, ClassificationMonthPojo> next = it.next();
+                            next._2.setIndex(count);
+                            filteredResult.add(next);
+                            count++;
+                        }
+                        return filteredResult.iterator();
+                    }
+                }).map(
+                     x -> x._2()
+                );
+
+        List<ClassificationMonthPojo> collect = top50RDD.collect();
+        KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20);
+
+
+
+        JavaRDD<ClassificationMonthPojo> firstMonthRDD = context.parallelize(collect.subList(0, 50));
+        JavaRDD<ClassificationMonthPojo> secondMonth = context.parallelize(collect.subList(50, 100));
+        JavaRDD<ClassificationMonthPojo>thirdMonth = context.parallelize(collect.subList(100, 150));
+        JavaRDD<ClassificationMonthPojo> fourthMonth = context.parallelize(collect.subList(150, 200));
+        JavaRDD<ClassificationMonthPojo> fifthMonth = context.parallelize(collect.subList(200, 250));
+
+
+        //KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20);
+        //JavaRDD<Row> rowJavaRDD_1 = kMeansMLibExecutor.executeKmeansMLib(context, top50RDD);
+
+        JavaRDD<Row> rowJavaRDD_1 = kMeansMLibExecutor.executeKmeansMLib(context, firstMonthRDD);
+        JavaRDD<Row> rowJavaRDD_2 = kMeansMLibExecutor.executeKmeansMLib(context, secondMonth);
+        JavaRDD<Row> rowJavaRDD_3 = kMeansMLibExecutor.executeKmeansMLib(context, thirdMonth);
+        JavaRDD<Row> rowJavaRDD_4 = kMeansMLibExecutor.executeKmeansMLib(context, fourthMonth);
+        JavaRDD<Row> rowJavaRDD_5 = kMeansMLibExecutor.executeKmeansMLib(context, fifthMonth);
+
+        //Dataset<Row> top50DF = new SQLContext(context).createDataFrame(top50RDD, ClassificationMonthPojo.class);
+        //top50DF.orderBy("monthYear").groupBy("monthYear").count().show();
 
 
         try {
@@ -135,6 +160,14 @@ public class ThirdQuery {
                 hdfs.delete(path, true);
             }
             top50RDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50");
+
+            //kMeansModel.save(context.sc(), resultsThirdQueryPath+"/KMeansModel");
+            rowJavaRDD_1.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_1");
+            rowJavaRDD_2.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_2");
+            rowJavaRDD_3.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_3");
+            rowJavaRDD_4.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_4");
+            rowJavaRDD_5.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_5");
+
             context.close();
         } catch (IOException e) {
             e.printStackTrace();
