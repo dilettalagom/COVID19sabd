@@ -1,12 +1,10 @@
-package query.customCombiner;
+package utility.customCombiner;
 
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
+import utility.comparators.WeekyearContinentComparator;
 import scala.Serializable;
 import scala.Tuple2;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 
 public class KeyAccumulator implements Serializable {

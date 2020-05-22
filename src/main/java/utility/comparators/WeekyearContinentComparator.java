@@ -1,4 +1,4 @@
-package query.customCombiner;
+package utility.comparators;
 
 import scala.Serializable;
 import scala.Tuple2;

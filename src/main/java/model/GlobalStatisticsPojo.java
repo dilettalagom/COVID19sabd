@@ -2,12 +2,10 @@ package model;
 
 import lombok.Data;
 import lombok.ToString;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-import utility.TrendCalculator;
+import utility.regression.TrendCalculator;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.stream.IntStream;
 
 
 @ToString @Data

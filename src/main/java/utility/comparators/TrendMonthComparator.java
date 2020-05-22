@@ -1,4 +1,4 @@
-package query.customCombiner;
+package utility.comparators;
 
 import model.ClassificationMonthPojo;
 import java.io.Serializable;

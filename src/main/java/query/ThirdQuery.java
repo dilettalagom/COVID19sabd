@@ -11,11 +11,13 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import query.customCombiner.MonthYearTrendComparator;
+import org.apache.spark.sql.SQLContext;
+import utility.comparators.MonthYearTrendComparator;
 import scala.Tuple2;
-import utility.ClassificMonthPartitioner;
-import utility.TrendCalculator;
+import utility.partitioner.ClassificMonthPartitioner;
+import utility.regression.TrendCalculator;
 import utility.parser.General;
 import java.io.IOException;
 import java.util.*;
@@ -74,8 +76,8 @@ public class ThirdQuery {
                         for (int i=0; i<allInfected.length;i++ ) {
                             String dateString  = tuplaRDD._2().getInfectedDates()[i];
                             String monthYear = General.createKeyYearMonth(dateString);
-
                             ClassificationMonthPojo newOne = new ClassificationMonthPojo(tuplaRDD._1().getState(), tuplaRDD._1().getCountry(),monthYear);
+
                             //refactor RDD elements
                             Tuple2<ClassificationMonthPojo, Tuple2<String,Double>> temp =
                                     new Tuple2<>(newOne, new Tuple2<>( dateString, allInfected[i] ));
@@ -109,7 +111,6 @@ public class ThirdQuery {
         //JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD = trendRDD.repartitionAndSortWithinPartitions(new ClassificMonthPartitioner(listKeys, numPart), new MonthYearTrendComparator().reversed())
         //il metodo sopra è equivalente a quello attuale
 
-
         JavaRDD<ClassificationMonthPojo> top50RDD = trendRDD.sortByKey(new MonthYearTrendComparator(), false).partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
                 .mapPartitions(new FlatMapFunction<Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>, Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>() {
                     @Override
@@ -129,7 +130,7 @@ public class ThirdQuery {
                 );
 
         List<ClassificationMonthPojo> collect = top50RDD.collect();
-        KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20);
+        KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20,context);
 
 
 
@@ -143,11 +144,14 @@ public class ThirdQuery {
         //KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20);
         //JavaRDD<Row> rowJavaRDD_1 = kMeansMLibExecutor.executeKmeansMLib(context, top50RDD);
 
-        JavaRDD<Row> rowJavaRDD_1 = kMeansMLibExecutor.executeKmeansMLib(context, firstMonthRDD);
-        JavaRDD<Row> rowJavaRDD_2 = kMeansMLibExecutor.executeKmeansMLib(context, secondMonth);
-        JavaRDD<Row> rowJavaRDD_3 = kMeansMLibExecutor.executeKmeansMLib(context, thirdMonth);
-        JavaRDD<Row> rowJavaRDD_4 = kMeansMLibExecutor.executeKmeansMLib(context, fourthMonth);
-        JavaRDD<Row> rowJavaRDD_5 = kMeansMLibExecutor.executeKmeansMLib(context, fifthMonth);
+        JavaRDD<Row> rowJavaRDD_1 = kMeansMLibExecutor.executeKmeansML(firstMonthRDD);
+        JavaRDD<Row> rowJavaRDD_2 = kMeansMLibExecutor.executeKmeansML(secondMonth);
+        JavaRDD<Row> rowJavaRDD_3 = kMeansMLibExecutor.executeKmeansML(thirdMonth);
+        JavaRDD<Row> rowJavaRDD_4 = kMeansMLibExecutor.executeKmeansML(fourthMonth);
+        JavaRDD<Row> rowJavaRDD_5 = kMeansMLibExecutor.executeKmeansML(fifthMonth);
+
+
+        //KMeansModel kMeansModel = kMeansMLibExecutor.executeKmeansMLib(firstMonthRDD);
 
         //Dataset<Row> top50DF = new SQLContext(context).createDataFrame(top50RDD, ClassificationMonthPojo.class);
         //top50DF.orderBy("monthYear").groupBy("monthYear").count().show();
@@ -160,8 +164,16 @@ public class ThirdQuery {
                 hdfs.delete(path, true);
             }
             top50RDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50");
+            //kMeansModel.toPMML(context.sc(), resultsThirdQueryPath+"/kmeansmodel_mlib");
 
-            //kMeansModel.save(context.sc(), resultsThirdQueryPath+"/KMeansModel");
+            // Save and load model
+            //kMeansModel.save(context.sc(), resultsThirdQueryPath+"/kmeansmodel_mlib");
+            System.out.println("\rModel saved to KMeansModel/");
+
+            Dataset<Row> parquetFile = new SQLContext(context).read().parquet(resultsThirdQueryPath + "/kmeansmodel_mlib/data/part-00000-e406369d-aa47-4046-b890-0dc9054c9252-c000.snappy.parquet");
+            parquetFile.write().csv(resultsThirdQueryPath);
+
+            context.stop();
             rowJavaRDD_1.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_1");
             rowJavaRDD_2.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_2");
             rowJavaRDD_3.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_3");

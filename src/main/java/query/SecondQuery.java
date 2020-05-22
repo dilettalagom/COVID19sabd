@@ -1,8 +1,8 @@
 package query;
 
 
-import model.ClassificationWeekYearPojo;
-import model.ContinentWeekKey;
+import model.keys.ClassificationWeekYearPojo;
+import model.keys.ContinentWeekKey;
 import model.GlobalStatisticsPojo;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -14,8 +14,8 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.util.StatCounter;
-import query.customCombiner.KeyAccumulator;
-import query.customCombiner.TrendComparator;
+import utility.customCombiner.KeyAccumulator;
+import utility.comparators.TrendComparator;
 import scala.Tuple2;
 import scala.Tuple4;
 import utility.parser.General;

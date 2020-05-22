@@ -8,37 +8,34 @@ import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.ml.feature.VectorAssembler;
 import org.apache.spark.ml.clustering.KMeans;
 import org.apache.spark.ml.linalg.Vector;
+//import org.apache.spark.mllib.linalg.Vectors;
+import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
-
-import java.util.List;
 
 public class KMeansMLibExecutor {
 
     int numClusters;
     int numIterations;
+    SQLContext sqc;
 
-    public KMeansMLibExecutor (int numClusters, int numIterations)
+    public KMeansMLibExecutor (int numClusters, int numIterations,JavaSparkContext context)
     {
         this.numClusters = numClusters;
         this.numIterations = numIterations;
+        this.sqc = new SQLContext(context);
     }
 
-    public JavaRDD<Row> executeKmeansMLib(JavaSparkContext context, JavaRDD<ClassificationMonthPojo> top50ForMonthAndTrend){
 
-       // JavaRDD<Vector> parsedData = top50ForMonthAndTrend.map(s -> Vectors.dense(s.getTrendMonth()));
-       // parsedData.cache();
-        SQLContext sqc = new SQLContext(context);
+    public JavaRDD<Row> executeKmeansML(JavaRDD<ClassificationMonthPojo> top50ForMonthAndTrend){
 
-        //Dataset<Row> top50DF = sqc.createDataFrame(top50ForMonthAndTrend, ClassificationMonthPojo.class).;
-        //top50DF.orderBy("monthYear").groupBy("monthYear");
 
         Dataset<Row> top50DF = sqc.createDataFrame(top50ForMonthAndTrend, ClassificationMonthPojo.class);
         top50DF.orderBy("monthYear").groupBy("monthYear");
 
-
-        String[] cols = new String[]{"index","trendMonth"};
+        //String[] cols = new String[]{"index","trendMonth"};
+        String[] cols = new String[]{"trendMonth"};
         VectorAssembler assembler = new VectorAssembler().setInputCols(cols).setOutputCol("features");
         Dataset<Row> transformedRDD = assembler.transform(top50DF);
 
@@ -49,13 +46,6 @@ public class KMeansMLibExecutor {
         Dataset<Row> predictions = model.transform(transformedRDD);
         transformedRDD.show(false);
 
-
-//            Files.write(
-//                    Paths.get("some_file.txt"),
-//                    model.(a -> Arrays.toString(a.toArray()))
-//                            .collect(Collectors.toList())
-//            );
-        // Evaluate clustering by computing Silhouette score
         ClusteringEvaluator evaluator = new ClusteringEvaluator();
 
         double silhouette = evaluator.evaluate(predictions);
@@ -68,31 +58,36 @@ public class KMeansMLibExecutor {
             System.out.println(center);
         }
         return predictions.toJavaRDD();
+    }
+
+
+
+    public org.apache.spark.mllib.clustering.KMeansModel executeKmeansMLib(JavaRDD<ClassificationMonthPojo> top50ForMonthAndTrend){
+
+        JavaRDD<org.apache.spark.mllib.linalg.Vector> vector = top50ForMonthAndTrend.map(s -> Vectors.dense(s.getTrendMonth()));
+        vector.cache();
 
         // Cluster the data into four classes using KMeans
-        //KMeansModel clusters = KMeans.train(parsedData.rdd(), numClusters, numIterations);
+        org.apache.spark.mllib.clustering.KMeansModel clusters = org.apache.spark.mllib.clustering.KMeans.train(vector.rdd(), numClusters, numIterations, org.apache.spark.mllib.clustering.KMeans.K_MEANS_PARALLEL());
 
-        //System.out.println("Cluster centers:");
-        //for (Vector center: clusters.clusterCenters()) {
-          //  System.out.println(" " + center);
-       // }
-       // double cost = clusters.computeCost(parsedData.rdd());
-        //System.out.println("Cost: " + cost);
+        System.out.println("Cluster centers:");
+        for (org.apache.spark.mllib.linalg.Vector center : clusters.clusterCenters()) {
+            System.out.println(" " + center);
+        }
+        double cost = clusters.computeCost(vector.rdd());
+        System.out.println("Cost: " + cost);
 
         // Evaluate clustering by computing Within Set Sum of Squared Errors
-       // double WSSSE = clusters.computeCost(parsedData.rdd());
-        //System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
+        double WSSSE = clusters.computeCost(vector.rdd());
+        System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
 
-        // Save and load model
-        //return clusters;
+         // Save and load model
+        return clusters;
 
-//        .save(jsc.sc(), "target/org/apache/spark/JavaKMeansExample/KMeansModel");
-//        KMeansModel sameModel = KMeansModel.load(jsc.sc(),
-//                "target/org/apache/spark/JavaKMeansExample/KMeansModel");
+        }
     }
 
 
 
 
 
-}

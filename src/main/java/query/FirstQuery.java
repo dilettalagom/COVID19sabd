@@ -1,7 +1,7 @@
 package query;
 
 import model.NationalStatisticsPojo;
-import model.NationalWeekKey;
+import model.keys.NationalWeekKey;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;

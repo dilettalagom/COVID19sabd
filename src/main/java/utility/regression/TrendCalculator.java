@@ -1,4 +1,4 @@
-package utility;
+package utility.regression;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import java.io.Serializable;

@@ -1,6 +1,6 @@
-package query.customCombiner;
+package utility.comparators;
 
-import model.ClassificationWeekYearPojo;
+import model.keys.ClassificationWeekYearPojo;
 import java.io.Serializable;
 import java.util.Comparator;
 

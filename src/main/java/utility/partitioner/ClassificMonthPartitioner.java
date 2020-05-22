@@ -1,4 +1,4 @@
-package utility;
+package utility.partitioner;
 
 import org.apache.spark.Partitioner;
 import scala.Tuple2;
