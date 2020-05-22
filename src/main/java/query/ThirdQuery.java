@@ -16,6 +16,7 @@ import org.apache.spark.sql.Encoders;
 import query.customCombiner.MonthYearTrendComparator;
 import scala.Tuple2;
 import utility.ClassificMonthPartitioner;
+import utility.LinearRegression;
 import utility.TrendCalculator;
 import utility.parser.General;
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class ThirdQuery {
                 .setMaster("local")
                 .setAppName("SecondQuery");
         JavaSparkContext context = new JavaSparkContext(conf);
+
 
         JavaRDD<String> csvData = context.textFile(datasetPath);
         String csvHeader = csvData.first();
@@ -88,19 +90,21 @@ public class ThirdQuery {
 
 
 
-        JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo> trendRDD = remappedRDD.groupByKey().mapToPair(
-                x -> {
-                    int size = Iterables.size(x._2());
-                    TrendCalculator trend = new TrendCalculator();
-                    double[] y = new double[size];
-                    for (int i = 0; i < size; i++) {
-                        y[i] = (Iterables.get(x._2, i))._2();
-                    }
-                    double trendCoefficient = trend.getTrendCoefficient(y);
-                    ClassificationMonthPojo pojo = new ClassificationMonthPojo(x._1.getMonthYear(), x._1.getState(), x._1.getCountry(), trendCoefficient);
-                    return new Tuple2(new Tuple2(pojo.getMonthYear(),trendCoefficient),pojo);
-                }
-        );
+        JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo> trendRDD =
+                remappedRDD.groupByKey().mapToPair(
+                        x -> {
+                            int size = Iterables.size(x._2());
+
+                            double[] y = new double[size];
+                            for (int i = 0; i < size; i++) {
+                                y[i] = (Iterables.get(x._2, i))._2();
+                            }
+                            double trendCoefficient = new TrendCalculator().getTrendCoefficient(y);
+                            //TODO:double trendCoefficient = new LinearRegression(y).slope();
+                            ClassificationMonthPojo pojo = new ClassificationMonthPojo(x._1.getMonthYear(), x._1.getState(), x._1.getCountry(), trendCoefficient);
+                            return new Tuple2(new Tuple2(pojo.getMonthYear(),trendCoefficient),pojo);
+                        }
+                );
 
         List<String> listKeys = trendRDD.keyBy(x -> x._1._1).keys().distinct().collect();
         int numPart = (int) listKeys.stream().count();
@@ -108,19 +112,20 @@ public class ThirdQuery {
         //JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD = trendRDD.repartitionAndSortWithinPartitions(new ClassificMonthPartitioner(listKeys, numPart), new MonthYearTrendComparator().reversed())
         //il metodo sopra è equivalente a quello attuale
 
-        JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD = trendRDD.sortByKey(new MonthYearTrendComparator(),false).partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
-                .mapPartitions(new FlatMapFunction<Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>, Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>() {
-                    @Override
-                    public Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> call(Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> it) throws Exception {
-                        List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> filteredResult = new ArrayList<>();
-                        int count = 0;
-                        while (it.hasNext() && count < 50) {
-                            filteredResult.add(it.next());
-                            count++;
-                        }
-                        return filteredResult.iterator();
-                    }
-                });
+        JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD =
+                trendRDD.sortByKey(new MonthYearTrendComparator(),false).partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
+                        .mapPartitions(new FlatMapFunction<Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>, Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>() {
+                            @Override
+                            public Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> call(Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> it) throws Exception {
+                                List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> filteredResult = new ArrayList<>();
+                                int count = 0;
+                                while (it.hasNext() && count < 50) {
+                                    filteredResult.add(it.next());
+                                    count++;
+                                }
+                                return filteredResult.iterator();
+                            }
+                        });
 
 
         try {
