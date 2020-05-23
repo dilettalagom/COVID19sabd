@@ -16,11 +16,13 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import utility.comparators.MonthYearTrendComparator;
 import scala.Tuple2;
+import utility.comparators.TrendMonthComparator;
 import utility.partitioner.ClassificMonthPartitioner;
 import utility.regression.TrendCalculator;
 import utility.parser.General;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 
 
 public class ThirdQuery {
@@ -88,7 +90,7 @@ public class ThirdQuery {
                 });
 
 
-
+        //<<mese,trend>,pojo>
         JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo> trendRDD =
                 remappedRDD.groupByKey().mapToPair(
                         x -> {
@@ -111,8 +113,11 @@ public class ThirdQuery {
         //JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD = trendRDD.repartitionAndSortWithinPartitions(new ClassificMonthPartitioner(listKeys, numPart), new MonthYearTrendComparator().reversed())
         //il metodo sopra è equivalente a quello attuale
 
-        JavaRDD<ClassificationMonthPojo> top50RDD = trendRDD.sortByKey(new MonthYearTrendComparator(), false).partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
-                .mapPartitions(new FlatMapFunction<Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>, Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>() {
+       /* JavaRDD<ClassificationMonthPojo> top50RDD = trendRDD.sortByKey(new MonthYearTrendComparator(), false)
+                .partitionBy(new ClassificMonthPartitioner(listKeys, numPart))
+                .mapPartitions(new FlatMapFunction<
+                        Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>,
+                        Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>>() {
                     @Override
                     public Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> call(Iterator<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> it) throws Exception {
                         List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> filteredResult = new ArrayList<>();
@@ -126,59 +131,43 @@ public class ThirdQuery {
                         return filteredResult.iterator();
                     }
                 }).map(
-                     x -> x._2()
-                );
+                        x -> x._2()
+                );*/
 
-        List<ClassificationMonthPojo> collect = top50RDD.collect();
+
+        //<<mese,trend>,pojo>
+        Map<String, JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo>> monthMapRDD = new HashMap<>();
+        listKeys.forEach(key ->{
+            monthMapRDD.computeIfAbsent(key, key2 -> trendRDD.filter(x -> x._1._1.equals(key2)));
+        });
+
+        monthMapRDD.forEach((monthKey, javaRDD ) -> {
+            List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50List =
+                    javaRDD.sortByKey(new MonthYearTrendComparator().reversed())
+                            .take(50);
+            monthMapRDD.put(monthKey, context.parallelizePairs(top50List).sortByKey(new MonthYearTrendComparator().reversed()));
+        });
+
+
         KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20,context);
+        monthMapRDD.forEach((s, javaRDD) -> {
+            JavaRDD<Row> kmeansRDD = kMeansMLibExecutor.executeKmeansML(javaRDD.values());
+            kmeansRDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50_" + s);
+        });
 
-
-
-        JavaRDD<ClassificationMonthPojo> firstMonthRDD = context.parallelize(collect.subList(0, 50));
-        JavaRDD<ClassificationMonthPojo> secondMonth = context.parallelize(collect.subList(50, 100));
-        JavaRDD<ClassificationMonthPojo>thirdMonth = context.parallelize(collect.subList(100, 150));
-        JavaRDD<ClassificationMonthPojo> fourthMonth = context.parallelize(collect.subList(150, 200));
-        JavaRDD<ClassificationMonthPojo> fifthMonth = context.parallelize(collect.subList(200, 250));
-
-
-        //KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20);
-        //JavaRDD<Row> rowJavaRDD_1 = kMeansMLibExecutor.executeKmeansMLib(context, top50RDD);
-
-        JavaRDD<Row> rowJavaRDD_1 = kMeansMLibExecutor.executeKmeansML(firstMonthRDD);
-        JavaRDD<Row> rowJavaRDD_2 = kMeansMLibExecutor.executeKmeansML(secondMonth);
-        JavaRDD<Row> rowJavaRDD_3 = kMeansMLibExecutor.executeKmeansML(thirdMonth);
-        JavaRDD<Row> rowJavaRDD_4 = kMeansMLibExecutor.executeKmeansML(fourthMonth);
-        JavaRDD<Row> rowJavaRDD_5 = kMeansMLibExecutor.executeKmeansML(fifthMonth);
-
-
-        //KMeansModel kMeansModel = kMeansMLibExecutor.executeKmeansMLib(firstMonthRDD);
-
-        //Dataset<Row> top50DF = new SQLContext(context).createDataFrame(top50RDD, ClassificationMonthPojo.class);
-        //top50DF.orderBy("monthYear").groupBy("monthYear").count().show();
 
 
         try {
             FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
             Path path = new Path(resultsThirdQueryPath);
             if (hdfs.exists(path)) {
-                hdfs.delete(path, true);
+                //    hdfs.delete(path, true);
             }
-            top50RDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50");
-            //kMeansModel.toPMML(context.sc(), resultsThirdQueryPath+"/kmeansmodel_mlib");
+            //top50RDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50");
 
-            // Save and load model
-            //kMeansModel.save(context.sc(), resultsThirdQueryPath+"/kmeansmodel_mlib");
-            System.out.println("\rModel saved to KMeansModel/");
 
-            Dataset<Row> parquetFile = new SQLContext(context).read().parquet(resultsThirdQueryPath + "/kmeansmodel_mlib/data/part-00000-e406369d-aa47-4046-b890-0dc9054c9252-c000.snappy.parquet");
-            parquetFile.write().csv(resultsThirdQueryPath);
 
             context.stop();
-            rowJavaRDD_1.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_1");
-            rowJavaRDD_2.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_2");
-            rowJavaRDD_3.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_3");
-            rowJavaRDD_4.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_4");
-            rowJavaRDD_5.repartition(1).saveAsTextFile("hdfs://master:54310/results/kmeansmodel_5");
 
             context.close();
         } catch (IOException e) {
