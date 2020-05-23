@@ -2,27 +2,21 @@ package query;
 
 import com.google.common.collect.Iterables;
 import kmeans.KMeansMLibExecutor;
+import kmeans.ml.kmeans.runner.KMeansRunner;
 import model.ClassificationMonthPojo;
 import model.GlobalStatisticsPojo;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
 import utility.comparators.MonthYearTrendComparator;
 import scala.Tuple2;
-import utility.comparators.TrendMonthComparator;
-import utility.partitioner.ClassificMonthPartitioner;
 import utility.regression.TrendCalculator;
 import utility.parser.General;
+
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 
 
 public class ThirdQuery {
@@ -108,7 +102,7 @@ public class ThirdQuery {
                 );
 
         List<String> listKeys = trendRDD.keyBy(x -> x._1._1).keys().distinct().collect();
-        int numPart = (int) listKeys.stream().count();
+        //int numPart = (int) listKeys.stream().count();
 
         //JavaRDD<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50RDD = trendRDD.repartitionAndSortWithinPartitions(new ClassificMonthPartitioner(listKeys, numPart), new MonthYearTrendComparator().reversed())
         //il metodo sopra è equivalente a quello attuale
@@ -136,44 +130,51 @@ public class ThirdQuery {
 
 
         //<<mese,trend>,pojo>
-        Map<String, JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo>> monthMapRDD = new HashMap<>();
+        Map<String, JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo>> monthMap = new HashMap<>();
         listKeys.forEach(key ->{
-            monthMapRDD.computeIfAbsent(key, key2 -> trendRDD.filter(x -> x._1._1.equals(key2)));
+            monthMap.computeIfAbsent(key, key2 -> trendRDD.filter(x -> x._1._1.equals(key2)));
         });
 
-        monthMapRDD.forEach((monthKey, javaRDD ) -> {
+        monthMap.forEach((monthKey, javaRDD ) -> {
             List<Tuple2<Tuple2<String, Double>, ClassificationMonthPojo>> top50List =
                     javaRDD.sortByKey(new MonthYearTrendComparator().reversed())
                             .take(50);
-            monthMapRDD.put(monthKey, context.parallelizePairs(top50List).sortByKey(new MonthYearTrendComparator().reversed()));
+            monthMap.put(monthKey, context.parallelizePairs(top50List).sortByKey(new MonthYearTrendComparator().reversed()));
         });
 
 
-        KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20,context);
-        monthMapRDD.forEach((s, javaRDD) -> {
+        //List<String> execTimesKM = new ArrayList<>();
+        //KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20,context);
+        //KMeansRunner kMeansRunner = new KMeansRunner(4, resultsThirdQueryPath);
+
+        KMeansRunner kMeansRunner = new KMeansRunner();
+        monthMap.forEach((s, javaRDD) -> {
+            /*Stopwatch timerKMeansMlib = new Stopwatch().start();
             JavaRDD<Row> kmeansRDD = kMeansMLibExecutor.executeKmeansML(javaRDD.values());
-            kmeansRDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50_" + s);
+            timerKMeansMlib.stop();
+            execTimesKM.add((new SimpleDateFormat("HH:mm:ss:SSS")).format(new Date(timerKMeansMlib.elapsedMillis())));
+
+            try{
+                FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
+                Path path = new Path(resultsThirdQueryPath+"/TOP50_"+s);
+                if (hdfs.exists(path)) {
+                        hdfs.delete(path, true);
+                }
+                kmeansRDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50_" + s);
+            }catch (IOException e){
+                e.printStackTrace();
+            }*/
+
+        //    (new KMeansRunner(4, resultsThirdQueryPath)).startKMeans(context, javaRDD,s);
+       // });
+            try {
+                kMeansRunner.startKMeansNaive(context,javaRDD.values(),s);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         });
 
-
-
-        try {
-            FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
-            Path path = new Path(resultsThirdQueryPath);
-            if (hdfs.exists(path)) {
-                //    hdfs.delete(path, true);
-            }
-            //top50RDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50");
-
-
-
-            context.stop();
-
-            context.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        context.stop();
     }
-
-
 }

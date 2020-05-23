@@ -32,24 +32,24 @@ public class KMeansMLibExecutor {
 
 
         Dataset<Row> top50DF = sqc.createDataFrame(top50ForMonthAndTrend, ClassificationMonthPojo.class);
-        top50DF.orderBy("monthYear").groupBy("monthYear");
+        //top50DF.orderBy("monthYear").groupBy("monthYear");
 
         //String[] cols = new String[]{"index","trendMonth"};
         String[] cols = new String[]{"trendMonth"};
         VectorAssembler assembler = new VectorAssembler().setInputCols(cols).setOutputCol("features");
         Dataset<Row> transformedRDD = assembler.transform(top50DF);
 
-        KMeans kMeans = new KMeans().setK(4).setSeed(1L);
+        KMeans kMeans = new KMeans().setK(4).setSeed(1L).setMaxIter(2);
         KMeansModel model = kMeans.fit(transformedRDD);
 
         // Make predictions
         Dataset<Row> predictions = model.transform(transformedRDD);
-        transformedRDD.show(false);
+        //transformedRDD.show(false);
 
         ClusteringEvaluator evaluator = new ClusteringEvaluator();
 
-        double silhouette = evaluator.evaluate(predictions);
-        System.out.println("Silhouette with squared euclidean distance = " + silhouette);
+//        double silhouette = evaluator.evaluate(predictions);
+//        System.out.println("Silhouette with squared euclidean distance = " + silhouette);
 
         // Shows the result.
         org.apache.spark.ml.linalg.Vector[] centers = model.clusterCenters();
