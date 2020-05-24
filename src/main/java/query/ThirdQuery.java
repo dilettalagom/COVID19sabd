@@ -2,9 +2,12 @@ package query;
 
 import com.google.common.collect.Iterables;
 import kmeans.KMeansMLibExecutor;
-import kmeans.ml.kmeans.runner.KMeansRunner;
+import kmeans.kmeansnaive.Cluster;
+import kmeans.kmeansnaive.KMeansSimulation;
 import model.ClassificationMonthPojo;
 import model.GlobalStatisticsPojo;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -147,7 +150,7 @@ public class ThirdQuery {
         //KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20,context);
         //KMeansRunner kMeansRunner = new KMeansRunner(4, resultsThirdQueryPath);
 
-        KMeansRunner kMeansRunner = new KMeansRunner();
+
         monthMap.forEach((s, javaRDD) -> {
             /*Stopwatch timerKMeansMlib = new Stopwatch().start();
             JavaRDD<Row> kmeansRDD = kMeansMLibExecutor.executeKmeansML(javaRDD.values());
@@ -168,7 +171,17 @@ public class ThirdQuery {
         //    (new KMeansRunner(4, resultsThirdQueryPath)).startKMeans(context, javaRDD,s);
        // });
             try {
-                kMeansRunner.startKMeansNaive(context,javaRDD.values(),s);
+                KMeansSimulation kMeansNaive = new KMeansSimulation(javaRDD.values());
+                List<Cluster> clusters = kMeansNaive.startKMeansSimulation();
+                FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
+                Path path = new Path(resultsThirdQueryPath+"/naive_"+s);
+                if (hdfs.exists(path)) {
+                    hdfs.delete(path, true);
+                }
+                clusters.forEach(
+                        c -> c.getPointsOfCluster().repartition(1).saveAsTextFile(resultsThirdQueryPath+"/naive_" + s + "_" + c.getId())
+                );
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
