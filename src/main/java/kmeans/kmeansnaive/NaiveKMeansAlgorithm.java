@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Random;
 
 @Slf4j
-public class KMeansSimulation implements Serializable {
+public class NaiveKMeansAlgorithm implements Serializable {
 
-    public static double CENTROID_EPSILON = 0.01;
+    public static double CENTROID_EPSILON = 0.0001;
     JavaRDD<ClassificationMonthPojo> dataset;
     Iteration currentIteration;
     public int K = 4;
@@ -22,7 +22,7 @@ public class KMeansSimulation implements Serializable {
 
 
 
-    public KMeansSimulation(JavaRDD<ClassificationMonthPojo> dataset) {
+    public NaiveKMeansAlgorithm(JavaRDD<ClassificationMonthPojo> dataset) {
         this.dataset = dataset.cache();
     }
 
@@ -42,7 +42,8 @@ public class KMeansSimulation implements Serializable {
 
             //fase 2: ricalcolo dei baricentri + check condizione di stop
             currentIteration.recomputeCentroids();
-            if (currentIteration.isAtLeastOneCentroidHasMoved() == false || checkBreakCondition(initialClusters, currentIteration.getFinalClustersMap())) {
+            //if (currentIteration.isAtLeastOneCentroidHasMoved() == false || checkBreakCondition(initialClusters, currentIteration.getFinalClustersMap())) {
+            if (currentIteration.isAtLeastOneCentroidHasMoved() == false ) {
                 break;
             }
             initialClusters = currentIteration.getFinalClustersMap();
@@ -81,3 +82,6 @@ public class KMeansSimulation implements Serializable {
     }
 
 }
+
+
+//NOTA: senza early-stopping, max_iter = 10, naive == mlib circa. Dipende dal run. A SEED fissato sono differenti

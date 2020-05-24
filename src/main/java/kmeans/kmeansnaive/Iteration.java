@@ -53,7 +53,7 @@ public class Iteration implements Serializable {
         clusters.forEach(
                 c -> {
                     c.relocateCentroid();
-                    this.atLeastOneCentroidHasMoved = (this.atLeastOneCentroidHasMoved || c.isCentroidMoved(KMeansSimulation.CENTROID_EPSILON));
+                    this.atLeastOneCentroidHasMoved = (this.atLeastOneCentroidHasMoved || c.isCentroidMoved(NaiveKMeansAlgorithm.CENTROID_EPSILON));
                 }
         );
     }

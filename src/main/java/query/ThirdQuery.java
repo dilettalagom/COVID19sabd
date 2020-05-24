@@ -3,7 +3,7 @@ package query;
 import com.google.common.collect.Iterables;
 import kmeans.KMeansMLibExecutor;
 import kmeans.kmeansnaive.Cluster;
-import kmeans.kmeansnaive.KMeansSimulation;
+import kmeans.kmeansnaive.NaiveKMeansAlgorithm;
 import model.ClassificationMonthPojo;
 import model.GlobalStatisticsPojo;
 import org.apache.hadoop.fs.FileSystem;
@@ -13,6 +13,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
+import org.apache.spark.mllib.linalg.Vector;
 import utility.comparators.MonthYearTrendComparator;
 import scala.Tuple2;
 import utility.regression.TrendCalculator;
@@ -20,6 +21,7 @@ import utility.parser.General;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 public class ThirdQuery {
@@ -147,15 +149,20 @@ public class ThirdQuery {
 
 
         //List<String> execTimesKM = new ArrayList<>();
-        //KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20,context);
+        KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20,context);
         //KMeansRunner kMeansRunner = new KMeansRunner(4, resultsThirdQueryPath);
 
 
         monthMap.forEach((s, javaRDD) -> {
-            /*Stopwatch timerKMeansMlib = new Stopwatch().start();
-            JavaRDD<Row> kmeansRDD = kMeansMLibExecutor.executeKmeansML(javaRDD.values());
-            timerKMeansMlib.stop();
-            execTimesKM.add((new SimpleDateFormat("HH:mm:ss:SSS")).format(new Date(timerKMeansMlib.elapsedMillis())));
+
+            //KMEANS MLIB
+            long startTime = System.nanoTime();
+            JavaPairRDD<Integer, Iterable<Vector>> kmeansRDD = kMeansMLibExecutor.executeKmeansMLib(javaRDD.values());
+
+            long endTime = System.nanoTime();
+
+            long convert = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+            System.out.println("Time elapsed : " + convert);
 
             try{
                 FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
@@ -163,16 +170,23 @@ public class ThirdQuery {
                 if (hdfs.exists(path)) {
                         hdfs.delete(path, true);
                 }
-                kmeansRDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/TOP50_" + s);
+                kmeansRDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/mlib"+s);
             }catch (IOException e){
                 e.printStackTrace();
-            }*/
+            }
+
+            //------------NAIVE--------------------------
 
         //    (new KMeansRunner(4, resultsThirdQueryPath)).startKMeans(context, javaRDD,s);
        // });
-            try {
-                KMeansSimulation kMeansNaive = new KMeansSimulation(javaRDD.values());
+             /*try {
+                long startTime = System.nanoTime();
+                NaiveKMeansAlgorithm kMeansNaive = new NaiveKMeansAlgorithm(javaRDD.values());
                 List<Cluster> clusters = kMeansNaive.startKMeansSimulation();
+                long endTime = System.nanoTime();
+                long convert = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+                System.out.println("Time elapsed : " + convert + "Iter " + s);
+
                 FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
                 Path path = new Path(resultsThirdQueryPath+"/naive_"+s);
                 if (hdfs.exists(path)) {
@@ -184,10 +198,13 @@ public class ThirdQuery {
 
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
 
         });
 
         context.stop();
     }
+
+
+
 }
