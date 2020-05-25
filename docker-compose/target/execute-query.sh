@@ -9,10 +9,20 @@ usage() {
 
     Options:
       -q num_query          Execute the specific querys number (1,2,3)
-      -t kmeans_type        Specify which k-means implementation will be used
+      -t kmeans_type        Specify which k-means implementation will be used (naive, mllib, ml)
       -h help               Print all the COVID19sabd informations
 EOF
   exit 1
+}
+
+getopts_get_optional_argument() {
+  eval next_token=\${$OPTIND}
+  if [[ -n $next_token && $next_token != -* ]]; then
+    OPTIND=$((OPTIND + 1))
+    OPTARG=$next_token
+  else
+    OPTARG=""
+  fi
 }
 
 wrong_query_name() {
@@ -78,6 +88,8 @@ execute_query() {
 
 }
 
+OPTARG2=${2:-t}
+
 while getopts "q:t:h:" o;do
 	case $o in
 	  q) q=$OPTARG;;
@@ -88,11 +100,14 @@ done
 shift "$((OPTIND - 1))"
 
 kmeans_type=""
-case $t in
-    ("naive") kmeans_type="naive";;
-    ("mllib") kmeans_type="mllib";;
-    ("ml") kmeans_type="ml";;
-    (*) wrong_query_name
-esac
+if [ $t != "" ]
+then
+    case $t in
+        ("naive") kmeans_type="naive";;
+        ("mllib") kmeans_type="mllib";;
+        ("ml") kmeans_type="ml";;
+        (*) wrong_query_name
+    esac
+fi
 
 execute_query $q $kmeans_type
