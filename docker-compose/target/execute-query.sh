@@ -35,7 +35,7 @@ execute_query() {
   if [ $q = 1 ]
   then
     echo "\n--------------------< submitting QUERY 1 >--------------------"
-    
+
     #query submit
     $SPARK_HOME/bin/spark-submit \
     --class query.FirstQuery \
@@ -66,6 +66,7 @@ execute_query() {
   elif [ $q = 3 ]
   then
     echo "\n--------------------< submitting QUERY 3 >--------------------"
+    echo "k-means executor: " $kmeans_type
     $SPARK_HOME/bin/spark-submit \
     --class query.ThirdQuery \
     --master "local" \
@@ -88,7 +89,6 @@ execute_query() {
 
 }
 
-OPTARG2=${2:-t}
 
 while getopts "q:t:h:" o;do
 	case $o in
@@ -100,7 +100,7 @@ done
 shift "$((OPTIND - 1))"
 
 kmeans_type=""
-if [ $t != "" ]
+if [ $q -eq 3 ] && [ -n $t ]
 then
     case $t in
         ("naive") kmeans_type="naive";;
