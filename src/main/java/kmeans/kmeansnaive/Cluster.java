@@ -1,8 +1,8 @@
 package kmeans.kmeansnaive;
 
+import kmeans.KMeansNaiveExecutor;
 import lombok.Data;
 import model.ClassificationMonthPojo;
-import org.apache.commons.math3.ml.distance.EuclideanDistance;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.util.StatCounter;
 
@@ -19,12 +19,14 @@ public class Cluster implements Serializable {
     int id;
     double initialCentroid;
     double relocatedCentroid;
+    double epsilon;
     JavaRDD<ClassificationMonthPojo> pointsOfCluster;
 
 
-    public Cluster(int id, double currentCentroid) {
+    public Cluster(int id, double currentCentroid, double epsilon) {
         this.id = id;
         this.initialCentroid = currentCentroid;
+        this.epsilon = epsilon;
     }
 
 
@@ -50,7 +52,7 @@ public class Cluster implements Serializable {
 
 
     public double getFinalCentroid(){
-        return (isCentroidMoved(NaiveKMeansAlgorithm.CENTROID_EPSILON)) ? this.relocatedCentroid : this.initialCentroid;
+        return (isCentroidMoved(this.epsilon)) ? this.relocatedCentroid : this.initialCentroid;
     }
 
 

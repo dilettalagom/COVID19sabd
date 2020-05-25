@@ -9,6 +9,7 @@ usage() {
 
     Options:
       -q num_query          Execute the specific querys number (1,2,3)
+      -t kmeans_type        Specify which k-means implementation will be used
       -h help               Print all the COVID19sabd informations
 EOF
   exit 1
@@ -58,17 +59,17 @@ execute_query() {
     $SPARK_HOME/bin/spark-submit \
     --class query.ThirdQuery \
     --master "local" \
-    /target/jar/COVID19sabd-1.0-SNAPSHOT.jar
+    /target/jar/COVID19sabd-1.0-SNAPSHOT.jar $kmeans_type
 
     hdfs dfs -ls /results/thirdQuery
     #hdfs dfs -cat /results/thirdQuery/part-00000 > query3.csv
-    hdfs dfs -cat /results/TOP50/part-00000 > top50.csv
+    hdfs dfs -ls /results/TOP50_*
 #    hdfs dfs -cat /results/kmeansmodel_1/part-00000 > kmeansmodel_1.csv
 #    hdfs dfs -cat /results/kmeansmodel_2/part-00000 > kmeansmodel_2.csv
 #    hdfs dfs -cat /results/kmeansmodel_3/part-00000 > kmeansmodel_3.csv
 #    hdfs dfs -cat /results/kmeansmodel_4/part-00000 > kmeansmodel_4.csv
 #    hdfs dfs -cat /results/kmeansmodel_5/part-00000 > kmeansmodel_5.csv
-    hdfs dfs -cat /results/kmeansmodel_mlib/part-00000 > kmeansmodel_mlib.csv
+    #hdfs dfs -cat /results/kmeansmodel_mlib/part-00000 > kmeansmodel_mlib.csv
 
 
   else
@@ -77,12 +78,21 @@ execute_query() {
 
 }
 
-while getopts "q:h:" o;do
+while getopts "q:t:h:" o;do
 	case $o in
 	  q) q=$OPTARG;;
+	  t) t=$OPTARG;;
 	  h) usage
 	esac
 done
 shift "$((OPTIND - 1))"
 
-execute_query $q
+kmeans_type=""
+case $t in
+    ("naive") kmeans_type="naive";;
+    ("mllib") kmeans_type="mllib";;
+    ("ml") kmeans_type="ml";;
+    (*) wrong_query_name
+esac
+
+execute_query $q $kmeans_type

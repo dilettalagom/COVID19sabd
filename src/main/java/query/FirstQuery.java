@@ -44,7 +44,7 @@ public class FirstQuery {
         JavaPairRDD<NationalWeekKey, Double> rddMeanHealed = nationalInfo.aggregateByKey(
                 new StatCounter(),
                 (acc, x) -> acc.merge(x.getNumHealed()),
-                (acc1, acc2) -> acc1.merge(acc2)
+                StatCounter::merge
         )
                 .mapToPair(x -> {
                     NationalWeekKey nationalWeekKey = x._1();

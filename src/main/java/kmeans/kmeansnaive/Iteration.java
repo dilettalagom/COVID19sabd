@@ -1,5 +1,6 @@
 package kmeans.kmeansnaive;
 
+import kmeans.KMeansNaiveExecutor;
 import lombok.Getter;
 import model.ClassificationMonthPojo;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -17,14 +18,17 @@ public class Iteration implements Serializable {
     @Getter
     public boolean atLeastOneCentroidHasMoved;
 
-    public Iteration(Map<Integer,Double> newValuesCluster) {
+    private double epsilon;
+
+    public Iteration(Map<Integer,Double> newValuesCluster, double epsilon) {
         this.clusters = initClusters(newValuesCluster);
+        this.epsilon = epsilon;
     }
 
     private List<Cluster> initClusters(Map<Integer,Double> newValuesCluster)
     {
         List<Cluster> clusters = new ArrayList<>();
-        newValuesCluster.forEach((clusterId, clusterCentroid) -> clusters.add(new Cluster(clusterId,clusterCentroid)));
+        newValuesCluster.forEach((clusterId, clusterCentroid) -> clusters.add(new Cluster(clusterId,clusterCentroid, epsilon)));
         return clusters;
     }
 
@@ -53,7 +57,7 @@ public class Iteration implements Serializable {
         clusters.forEach(
                 c -> {
                     c.relocateCentroid();
-                    this.atLeastOneCentroidHasMoved = (this.atLeastOneCentroidHasMoved || c.isCentroidMoved(NaiveKMeansAlgorithm.CENTROID_EPSILON));
+                    this.atLeastOneCentroidHasMoved = (this.atLeastOneCentroidHasMoved || c.isCentroidMoved(this.epsilon));
                 }
         );
     }

@@ -1,9 +1,9 @@
 package query;
 
 import com.google.common.collect.Iterables;
+import kmeans.KMeansMLExecutor;
 import kmeans.KMeansMLibExecutor;
-import kmeans.kmeansnaive.Cluster;
-import kmeans.kmeansnaive.NaiveKMeansAlgorithm;
+import kmeans.KMeansNaiveExecutor;
 import model.ClassificationMonthPojo;
 import model.GlobalStatisticsPojo;
 import org.apache.hadoop.fs.FileSystem;
@@ -30,6 +30,8 @@ public class ThirdQuery {
     private static String resultsThirdQueryPath = "hdfs://master:54310/results";
 
     public static void main(String[] args) {
+
+        String kmeansType = args[0]; //{naive, mlib,ml}
 
         SparkConf conf = new SparkConf()
                 .setMaster("local")
@@ -148,7 +150,25 @@ public class ThirdQuery {
         });
 
 
-        //List<String> execTimesKM = new ArrayList<>();
+        switch (kmeansType){
+            case "naive":
+                KMeansNaiveExecutor naive = new KMeansNaiveExecutor(4,20,1e-4, context, resultsThirdQueryPath);
+                naive.starter(monthMap);
+                return;
+
+            case "mllib":
+                KMeansMLibExecutor mllib = new KMeansMLibExecutor(4,20,1e-4, context, resultsThirdQueryPath);
+                mllib.starter(monthMap);
+                return;
+
+            case "ml":
+                KMeansMLExecutor ml = new KMeansMLExecutor(4,20,1e-4, context, resultsThirdQueryPath);
+                ml.starter(monthMap);
+                return;
+
+        }
+
+     /*   //------------mllib--------------------------
         KMeansMLibExecutor kMeansMLibExecutor = new KMeansMLibExecutor(4, 20,context);
         //KMeansRunner kMeansRunner = new KMeansRunner(4, resultsThirdQueryPath);
 
@@ -168,39 +188,40 @@ public class ThirdQuery {
                 FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
                 Path path = new Path(resultsThirdQueryPath+"/TOP50_"+s);
                 if (hdfs.exists(path)) {
-                        hdfs.delete(path, true);
+                    hdfs.delete(path, true);
                 }
                 kmeansRDD.repartition(1).saveAsTextFile(resultsThirdQueryPath+"/mlib"+s);
             }catch (IOException e){
                 e.printStackTrace();
             }
+        });*/
 
-            //------------NAIVE--------------------------
+       /* //------------NAIVE--------------------------
 
-        //    (new KMeansRunner(4, resultsThirdQueryPath)).startKMeans(context, javaRDD,s);
-       // });
-             /*try {
-                long startTime = System.nanoTime();
-                NaiveKMeansAlgorithm kMeansNaive = new NaiveKMeansAlgorithm(javaRDD.values());
-                List<Cluster> clusters = kMeansNaive.startKMeansSimulation();
-                long endTime = System.nanoTime();
-                long convert = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-                System.out.println("Time elapsed : " + convert + "Iter " + s);
+        monthMap.forEach((s, javaRDD) -> {
+                    (new KMeansRunner(4, resultsThirdQueryPath)).startKMeans(context, javaRDD, s);
 
-                FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
-                Path path = new Path(resultsThirdQueryPath+"/naive_"+s);
-                if (hdfs.exists(path)) {
-                    hdfs.delete(path, true);
-                }
-                clusters.forEach(
-                        c -> c.getPointsOfCluster().repartition(1).saveAsTextFile(resultsThirdQueryPath+"/naive_" + s + "_" + c.getId())
-                );
+                    try {
+                        long startTime = System.nanoTime();
+                        KMeansNaiveExecutor kMeansNaive = new KMeansNaiveExecutor(javaRDD.values());
+                        List<Cluster> clusters = kMeansNaive.startKMeansSimulation();
+                        long endTime = System.nanoTime();
+                        long convert = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+                        System.out.println("Time elapsed : " + convert + "Iter " + s);
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
+                        FileSystem hdfs = FileSystem.get(context.hadoopConfiguration());
+                        Path path = new Path(resultsThirdQueryPath + "/naive_" + s);
+                        if (hdfs.exists(path)) {
+                            hdfs.delete(path, true);
+                        }
+                        clusters.forEach(
+                                c -> c.getPointsOfCluster().repartition(1).saveAsTextFile(resultsThirdQueryPath + "/naive_" + s + "_" + c.getId())
+                        );
 
-        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }*/
 
         context.stop();
     }
