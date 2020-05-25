@@ -40,14 +40,11 @@ public class KMeansMLibExecutor extends KMeansExecutor{
                 .cache();
 
         KMeans kMeans = new KMeans()
-                .setEpsilon(this.EPSILON);
-                //.setSeed(1L);
+                .setEpsilon(this.EPSILON)
+                .setSeed(-7520460576894506511L);
 
-        System.out.println("FUFFA");
         // Cluster the data into four classes using KMeans
         KMeansModel clusters = kMeans.train(vector.rdd(), this.K, this.MAX_ITER, KMeans.K_MEANS_PARALLEL());
-
-        System.out.println("SEED "+ kMeans.getSeed());
 
         System.out.println("Cluster centers:");
         for (Vector center : clusters.clusterCenters()) {

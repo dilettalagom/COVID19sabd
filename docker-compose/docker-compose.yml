@@ -4,6 +4,13 @@ networks:
   app_network:
     driver: bridge
 
+  cassandra_ring:
+    ipam:
+      driver: default
+      #config:
+      #  subnet: 172.30.0.0/16
+      #  gateway: 172.30.0.1/16
+
 services:
 
   master:
@@ -44,20 +51,20 @@ services:
 
 
   worker2:
-   image: dilettalagom/spark-hdfs-node
-   container_name: worker2
-   hostname: worker2
-   networks:
-     - app_network
-   ports:
-     - "9862:9861"
-   depends_on:
-     - master
-   volumes:
-     - ./target:/target
-   stdin_open: true
-   tty: true
-   command: bash -c "sh start-services.sh"
+    image: dilettalagom/spark-hdfs-node
+    container_name: worker2
+    hostname: worker2
+    networks:
+      - app_network
+    ports:
+      - "9862:9861"
+    depends_on:
+      - master
+    volumes:
+      - ./target:/target
+    stdin_open: true
+    tty: true
+    command: bash -c "sh start-services.sh"
 
   worker3:
     image: dilettalagom/spark-hdfs-node
@@ -66,7 +73,7 @@ services:
     networks:
       - app_network
     ports:
-       - "9863:9861"
+      - "9863:9861"
     depends_on:
       - master
     volumes:
@@ -103,6 +110,69 @@ services:
       - "4040:4040"
       - "43212:43212"
       - "43210:43210" #remote intellij degugging port
-
     stdin_open: true
     tty: true
+
+
+  cassandra1:
+    build:
+      context: ../docker-images/cassandra-node
+    image: dilettalagom/cassandra
+    container_name: cassandra1
+    hostname: cassandra1
+    networks:
+      - app_network
+    #  - cassandra_ring
+    #      ipv4_address: 172.30.0.2
+    #environment:
+    volumes:
+      - ./cassandra-schemas:/opt/cassandra/schemas
+    #    ports:
+    #      - "7199:7199" # JMX
+    #      - "7000:7000" # cluster communication
+    #      - "7001:7001" # cluster communication (SSL)
+    #      - "9042:9042" # native protocol clients : cqlsh
+    #      - "9160:9160" # thrift clients
+    stdin_open: true
+    tty: true
+
+
+#  cassandra2:
+#    build:
+#      context: ../docker-images/cassandra-node
+#    image: dilettalagom/cassandra
+#    container_name: cassandra2
+#    hostname: cassandra2
+#    networks:
+#      - app_network
+#    #   - cassandra_ring
+#    links:
+#      - cassandra1:cassandra1
+#    #environment:
+#    #  - CASSANDRA_SEEDS=cassandra
+#    #      ipv4_address: 172.30.0.2
+#    volumes:
+#      - ./cassandra-schemas:/opt/cassandra/schemas
+#    #    ports:
+#    #      - "7199:7199" # JMX
+#    #      - "7000:7000" # cluster communication
+#    #      - "7001:7001" # cluster communication (SSL)
+#    #      - "9042:9042" # native protocol clients : cqlsh
+#    #     # - "9160:9160" # thrift clients
+#    depends_on:
+#      - cassandra1
+#    stdin_open: true
+#    tty: true
+
+
+#  grafana:
+#    image: grafana/grafana:4.5.2
+#    env_file:
+#      - grafana/grafana.env
+#    links:
+#      - prometheus:prometheus
+#    ports:
+#      - "3000:3000"
+#    restart: always
+#    volumes:
+#      - ./data/grafana:/var/lib/grafana
