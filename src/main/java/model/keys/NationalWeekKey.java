@@ -6,11 +6,14 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.threeten.extra.YearWeek;
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
+import java.util.Date;
 import java.util.Objects;
 
 @Data
@@ -18,12 +21,16 @@ public class NationalWeekKey implements Serializable, Comparable<NationalWeekKey
 
 
     private static org.joda.time.format.DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
-    private DateTime dateStart;
+    private String dateStart;
     private String WeekYear;
 
 
     public NationalWeekKey(String dateStart) {
-        this.dateStart = formatDate(dateStart);
+        try {
+            this.dateStart = changeFormatDate(dateStart);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         this.WeekYear = createKeyWeekYear(dateStart);
     }
 
@@ -72,6 +79,12 @@ public class NationalWeekKey implements Serializable, Comparable<NationalWeekKey
     }
 
 
+    public static String changeFormatDate(String dateInput) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        Date d = sdf.parse(dateInput);
+        sdf.applyPattern("yyyy-MM-dd");
+        return sdf.format(d);
+    }
 
 
 

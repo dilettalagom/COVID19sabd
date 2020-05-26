@@ -167,7 +167,7 @@ public class SecondQuery {
                 hdfs.delete(path, true);
             }
             statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery");
-            //top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/TOP50");
+            top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery/TOP100");
             context.close();
         } catch (IOException e) {
             e.printStackTrace();

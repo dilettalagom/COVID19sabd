@@ -14,6 +14,8 @@ import scala.Tuple2;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 public class KMeansMLibExecutor extends KMeansExecutor{
 
@@ -24,15 +26,30 @@ public class KMeansMLibExecutor extends KMeansExecutor{
 
 
 
-    public static JavaPairRDD<Integer, Iterable<Vector>> getClustersAndPoints(JavaRDD<Vector> inputPoints, KMeansModel clusterModel ) {
+    public static JavaPairRDD<Integer, ClassificationMonthPojo> getClustersAndPoints(JavaRDD<Vector> inputPoints, KMeansModel clusterModel, JavaRDD<ClassificationMonthPojo> originalData ) {
         // Group the input points by their kmeans centroid index
-        return inputPoints.groupBy(
+        JavaPairRDD<Integer,Double> javaPairRDD = inputPoints.groupBy(
                 point -> clusterModel.predict(point)
+        ).flatMapValues(
+                x -> x
+        ).mapToPair(
+                x -> new Tuple2(x._1(), DoubleStream.of(x._2().toArray()).boxed().collect(Collectors.toList()))
+        ).flatMapValues(
+                x -> x
         );
+        JavaPairRDD<Double,Integer> trendCluster = javaPairRDD.mapToPair(x -> new Tuple2(x._2(), x._1()));
+
+        JavaPairRDD<Double, ClassificationMonthPojo> remappedPojo = originalData.mapToPair(
+                pojo -> new Tuple2<>(pojo.getTrendMonth(), pojo)
+        );
+
+        JavaPairRDD<Double, Tuple2<Integer, ClassificationMonthPojo>> join = trendCluster.join(remappedPojo);
+
+        return join.mapToPair(x -> new Tuple2(x._2._1,x._2._2));
     }
 
 
-    public JavaPairRDD<Integer, Iterable<Vector>> executeAlgorithm(JavaRDD<ClassificationMonthPojo> top50ForMonthAndTrend){
+    public JavaPairRDD<Integer, ClassificationMonthPojo> executeAlgorithm(JavaRDD<ClassificationMonthPojo> top50ForMonthAndTrend){
 
         JavaRDD<org.apache.spark.mllib.linalg.Vector> vector = top50ForMonthAndTrend
                 .map(s -> Vectors.dense(s.getTrendMonth()))
@@ -56,7 +73,7 @@ public class KMeansMLibExecutor extends KMeansExecutor{
         double WSSSE = clusters.computeCost(vector.rdd());
         System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
 
-        JavaPairRDD<Integer, Iterable<Vector>> resultClusters = getClustersAndPoints(vector, clusters);
+        JavaPairRDD<Integer, ClassificationMonthPojo> resultClusters = getClustersAndPoints(vector, clusters, top50ForMonthAndTrend).distinct();
 
         // Save and load model
         return resultClusters;
@@ -70,7 +87,7 @@ public class KMeansMLibExecutor extends KMeansExecutor{
 
             //KMEANS MLIB
             long startTime = System.nanoTime();
-            JavaPairRDD<Integer, Iterable<Vector>> kmeansRDD = executeAlgorithm(javaRDD.values());
+            JavaPairRDD<Integer, ClassificationMonthPojo> kmeansRDD = executeAlgorithm(javaRDD.values());
 
             long endTime = System.nanoTime();
 
@@ -83,7 +100,7 @@ public class KMeansMLibExecutor extends KMeansExecutor{
         });
     }
 
-    public void printResults(JavaPairRDD<Integer, Iterable<Vector>> resultRDD, String outputPath) {
+    public void printResults(JavaPairRDD<Integer, ClassificationMonthPojo> resultRDD, String outputPath) {
         try{
             FileSystem hdfs = FileSystem.get(this.jsc.hadoopConfiguration());
             Path path = new Path(outputPath);

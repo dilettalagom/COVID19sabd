@@ -1,13 +1,13 @@
 CREATE KEYSPACE IF NOT EXISTS COVID19
-  WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };
+  WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 3 };
 
 CREATE TABLE IF NOT EXISTS COVID19.QUERY1_RESULTS (
   week_year text,
-  datestart_week text,
+  datestart_week date,
   mean_healed double,
   mean_swabs double,
-  PRIMARY KEY (datestart_week, week_year)
-) WITH CLUSTERING ORDER BY (week_year ASC)
+  PRIMARY KEY (week_year, datestart_week)
+) WITH CLUSTERING ORDER BY (datestart_week ASC)
 AND comment = 'Q1: per ogni settimana calcolare il numero medio di guariti e tamponi';
 
 
@@ -22,6 +22,7 @@ AND comment = 'Q2: classifica dei primi 100 stati più colpiti dalla pandemia in
 
 CREATE TABLE IF NOT EXISTS COVID19.QUERY2_RESULTS (
    week_year text,
+   datestart_week text,
    continent text,
    mean_confirmed_cases double,
    dev_std_confirmed_cases double,
