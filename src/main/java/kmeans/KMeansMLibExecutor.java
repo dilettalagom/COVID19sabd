@@ -11,7 +11,6 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.clustering.KMeans;
 import org.apache.spark.mllib.linalg.Vector;
 import scala.Tuple2;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;

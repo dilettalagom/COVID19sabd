@@ -16,7 +16,7 @@ ADD cassandra-configuration/cassandra.yaml $CASSANDRA_CONFIG/cassandra.yaml
 
 #add schemas files
 RUN mkdir $CASSANDRA_HOME/schemas;
-ADD schemas/COVID19schema.cql  $CASSANDRA_HOME/schemas/COVID19schema.cql
+ADD ../../docker-compose/cassandra-schemas/COVID19schema.cql  $CASSANDRA_HOME/schemas/COVID19schema.cql
 WORKDIR $CASSANDRA_HOME
 
 

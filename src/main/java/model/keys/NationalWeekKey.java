@@ -24,11 +24,11 @@ public class NationalWeekKey implements Serializable, Comparable<NationalWeekKey
 
     public NationalWeekKey(String dateStart) {
         this.dateStart = formatDate(dateStart);
-        this.WeekYear = createKeyYearMonth(dateStart);
+        this.WeekYear = createKeyWeekYear(dateStart);
     }
 
 
-    public static String createKeyYearMonth(String date){
+    public static String createKeyWeekYear(String date){
 
         DateTimeFormatter FMT = new DateTimeFormatterBuilder()
                 .append(DateTimeFormatter.ISO_LOCAL_DATE)

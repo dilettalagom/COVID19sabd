@@ -3,12 +3,18 @@ USER root
 
 RUN apt-get update
 RUN apt-get install -y sudo wget openjdk-8-jre curl python2.7 python-pip vim
+#CASSANDRA DRIVER
+#RUN apt-get install unixodbc unixodbc-dev
+
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 RUN pip install numpy
 RUN pip install pandas
 RUN pip install pycountry_convert
 RUN pip install scipy
+RUN pip install cassandra-driver
+#RUN pip install pyodbc
+
 
 #RUN wget https://mirror.nohup.it/apache/nifi/1.11.4/nifi-1.11.4-bin.tar.gz ; tar -zxf nifi-1.11.4-bin.tar.gz -C /usr/local/ ; rm nifi-1.11.4-bin.tar.gz
 ADD nifi-configuration/nifi-1.11.4-bin.tar.gz /usr/local/

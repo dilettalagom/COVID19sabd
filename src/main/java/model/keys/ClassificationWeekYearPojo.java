@@ -13,14 +13,16 @@ public class ClassificationWeekYearPojo implements Serializable {
     String country;
     String continent;
     String weekYear;
+    String dateStart;
 
 
-    public ClassificationWeekYearPojo(double trendCoefficient, String state, String country, String continent, String weekYear) {
+    public ClassificationWeekYearPojo(double trendCoefficient, String state, String country, String continent, String weekYear, String dateStart) {
         this.trendCoefficient = trendCoefficient;
         this.state = state;
         this.country = country;
         this.continent = continent;
         this.weekYear = weekYear;
+        this.dateStart = dateStart;
     }
 
     public ClassificationWeekYearPojo(double trendCoefficient, String state, String country, String continent) {

@@ -81,12 +81,13 @@ public class SecondQuery {
 
                         for (int i=0; i<allInfected.length;i++ ) {
                             String dateString  = tuplaRDD._2().getInfectedDates()[i];
+
                             //update weekYear in Key
                             String weekYear = General.createKeyWeekYear(dateString);
 
                             ClassificationWeekYearPojo newOne = new ClassificationWeekYearPojo(tuplaRDD._1().getTrendCoefficient(),
                                                                                                 tuplaRDD._1().getState(), tuplaRDD._1().getCountry(),
-                                                                                                tuplaRDD._1().getContinent(),weekYear);
+                                                                                                tuplaRDD._1().getContinent(),weekYear, dateString);
                             //refactor RDD elements
                             Tuple2<ClassificationWeekYearPojo, Tuple2<String,Double>> temp =
                                     new Tuple2<>(newOne,
@@ -105,7 +106,7 @@ public class SecondQuery {
 
         JavaPairRDD<ContinentWeekKey,Double> continentWeekRDD = bazukaRDD.mapToPair(
                 t -> {
-                    ContinentWeekKey newKey = new ContinentWeekKey(t._1().getContinent(), t._1().getWeekYear());
+                    ContinentWeekKey newKey = new ContinentWeekKey(t._1().getContinent(), t._1().getWeekYear(),t._1.getDateStart());
                     return new Tuple2(newKey, t._2);
                 }
         );
