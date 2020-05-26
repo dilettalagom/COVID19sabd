@@ -216,3 +216,19 @@ services:
       - "cassandra-seed"
     volumes:
       - ./cassandra-schemas:/opt/cassandra/schemas
+
+
+  graphana-cassandra-connector:
+    build:
+      context: ../docker-images/graphana-custom-connector
+    image: dilettalagom/cg-connector
+    container_name: graphana-cassandra-connector
+    hostname: graphana-cassandra-connector
+    ports:
+      - 8080:5000
+    networks:
+      - app_network
+    volumes:
+    - ./grafana-connector/app:/app
+
+
