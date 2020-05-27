@@ -61,7 +61,7 @@ public class SecondQuery {
                 }).cache();
 
         List top100List = splittedRDD.sortByKey(new TrendComparator(), false).take(100);
-        JavaPairRDD top100RDD = context.parallelizePairs(top100List);
+        JavaPairRDD<ClassificationWeekYearPojo,GlobalStatisticsPojo> top100RDD = context.parallelizePairs(top100List);
 
 
 
@@ -167,7 +167,8 @@ public class SecondQuery {
                 hdfs.delete(path, true);
             }
             statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery");
-            top100RDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery/TOP100");
+            JavaRDD<ClassificationWeekYearPojo> res = top100RDD.map(x -> x._1());
+            res.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery/TOP100");
             context.close();
         } catch (IOException e) {
             e.printStackTrace();

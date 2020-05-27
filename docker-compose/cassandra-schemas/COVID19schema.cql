@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS COVID19.QUERY2_TOP100_RESULTS (
    trendline_coefficient double,
    state text,
    country text,
-   PRIMARY KEY ((state, country), trendline_coefficient)
-) WITH CLUSTERING ORDER BY (trendline_coefficient DESC)
+   PRIMARY KEY ((trendline_coefficient,state))
+) WITH CLUSTERING ORDER BY (trendline_coefficient ASC)
 AND comment = 'Q2: classifica dei primi 100 stati più colpiti dalla pandemia in base al trend';
 
 
