@@ -47,7 +47,7 @@ services:
     stdin_open: true
     tty: true
     command: bash -c "sh start-services.sh"
-#
+
 #
 #  worker2:
 #    image: dilettalagom/spark-hdfs-node
@@ -80,7 +80,7 @@ services:
 #    stdin_open: true
 #    tty: true
 #    command: bash -c "sh start-services.sh"
-#
+
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
@@ -218,17 +218,17 @@ services:
       - ./cassandra-schemas:/opt/cassandra/schemas
 
 
-  graphana-cassandra-connector:
-    build:
-      context: ../docker-images/graphana-custom-connector
-    image: dilettalagom/cg-connector
-    container_name: graphana-cassandra-connector
-    hostname: graphana-cassandra-connector
-    ports:
-      - 8080:5000
-    networks:
-      - app_network
-    volumes:
-    - ./grafana-connector/app:/app
+#  graphana-cassandra-connector:
+#    build:
+#      context: ../docker-images/graphana-custom-connector
+#    image: dilettalagom/cg-connector
+#    container_name: graphana-cassandra-connector
+#    hostname: graphana-cassandra-connector
+#    ports:
+#      - 8080:5000
+#    networks:
+#      - app_network
+#    volumes:
+#    - ./grafana-connector/app:/app
 
 

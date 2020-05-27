@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS COVID19.QUERY3_KMEANS_NAIVE_RESULTS (
    trend double,
    state text,
    country text,
-   PRIMARY KEY (month_year,trend),
-) WITH CLUSTERING ORDER BY (trend ASC)
+   PRIMARY KEY ((month_year, cluster_id, country, state),trend),
+) WITH CLUSTERING ORDER BY (trend DESC)
 AND comment = 'Q3: determinare stati e nazioni che fanno parte del cluster con kmeans naive';
 
 
@@ -59,8 +59,8 @@ CREATE TABLE IF NOT EXISTS COVID19.QUERY3_MLLIB_RESULTS (
    trend double,
    state text,
    country text,
-   PRIMARY KEY (month_year,trend),
-) WITH CLUSTERING ORDER BY (trend ASC)
+   PRIMARY KEY ((month_year, cluster_id, country, state),trend),
+) WITH CLUSTERING ORDER BY (trend DESC)
 AND comment = 'Q3: determinare stati e nazioni che fanno parte del cluster con kmeans mllib';
 
 
