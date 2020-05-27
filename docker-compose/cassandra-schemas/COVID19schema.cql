@@ -15,9 +15,8 @@ CREATE TABLE IF NOT EXISTS COVID19.QUERY2_TOP100_RESULTS (
    trendline_coefficient double,
    state text,
    country text,
-   PRIMARY KEY ((trendline_coefficient,state))
-) WITH CLUSTERING ORDER BY (trendline_coefficient ASC)
-AND comment = 'Q2: classifica dei primi 100 stati più colpiti dalla pandemia in base al trend';
+   PRIMARY KEY (trendline_coefficient)
+) WITH comment = 'Q2: classifica dei primi 100 stati più colpiti dalla pandemia in base al trend';
 
 
 CREATE TABLE IF NOT EXISTS COVID19.QUERY2_RESULTS (
@@ -45,66 +44,24 @@ AND comment = 'Q3: classifica dei 50 stati più colpiti dalla pandemia in base a
 
 CREATE TABLE IF NOT EXISTS COVID19.QUERY3_KMEANS_NAIVE_RESULTS (
    cluster_id int,
-   trends_countries map<double,text>,
-   PRIMARY KEY (cluster_id),
-) WITH comment = 'Q3: determinare stati e nazioni che fanno parte del cluster con kmeans naive';
+   month_year text,
+   trend double,
+   state text,
+   country text,
+   PRIMARY KEY (month_year,trend),
+) WITH CLUSTERING ORDER BY (trend ASC)
+AND comment = 'Q3: determinare stati e nazioni che fanno parte del cluster con kmeans naive';
 
 
-CREATE TABLE IF NOT EXISTS COVID19.QUERY3_KMEANS_MLLIB_RESULTS (
+CREATE TABLE IF NOT EXISTS COVID19.QUERY3_MLLIB_RESULTS (
    cluster_id int,
-   trends_countries map<double,text>,
-   PRIMARY KEY (cluster_id)
-) WITH comment = 'Q3: determinare stati e nazioni che fanno parte del cluster con kmeans mllib';
+   month_year text,
+   trend double,
+   state text,
+   country text,
+   PRIMARY KEY (month_year,trend),
+) WITH CLUSTERING ORDER BY (trend ASC)
+AND comment = 'Q3: determinare stati e nazioni che fanno parte del cluster con kmeans mllib';
 
 
 
-/*
-
-TODO: JUST A TEST
-//show: describe keyspaces
-CREATE KEYSPACE IF NOT EXISTS covid19
-  WITH replication = {'class': 'NetworkTopologyStrategy', 'pickle-east': 1 };
-
-//describe tables;
-
-
-CREATE TABLE IF NOT EXISTS pickle.employees (
-  employee_id uuid,
-  PRIMARY KEY ((employee_id))
-) WITH comment = 'Table with all employee IDs.';
-
-CREATE TABLE IF NOT EXISTS pickle.timesheets (
-  employee_id uuid,
-  pickle_tree_id uuid,
-  timestamp timeuuid,
-  pickle_count int,
-  pickle_avg_size float,
-  watered boolean,
-  PRIMARY KEY ((employee_id), pickle_tree_id, timestamp)
-) WITH CLUSTERING ORDER BY (pickle_tree_id ASC, timestamp DESC)
-  AND comment = 'The most recent employee visits for each pickle tree.';
-
-CREATE TABLE IF NOT EXISTS pickle.trees (
-  pickle_tree_id uuid,
-  timestamp timeuuid,
-  employee_id uuid,
-  pickle_count int,
-  pickle_avg_size float,
-  watered boolean,
-  PRIMARY KEY ((pickle_tree_id), timestamp)
-) WITH CLUSTERING ORDER BY (timestamp DESC)
-  AND comment = 'The most recent history for each pickle tree';
-
-CREATE TABLE IF NOT EXISTS pickle.production (
-  pickle_count int,
-  pickle_tree_id uuid,
-  timestamp timeuuid,
-  PRIMARY KEY ((pickle_count), pickle_tree_id, timestamp)
-) WITH CLUSTERING ORDER BY (pickle_tree_id ASC, timestamp ASC)
-  AND comment = 'How often a pickle tree produces the same number of pickles.';
-
-
-CREATE KEYSPACE IF NOT EXISTS reaper_db
-  WITH replication = {'class': 'NetworkTopologyStrategy', 'pickle-east': 1 };
-
-  */

@@ -88,35 +88,26 @@ public class KMeansNaiveExecutor extends KMeansExecutor {
 
 
     public void printResults(List<Cluster> clusters, String s) {
-        String outputPath = this.pathOutputFile + "/NAIVE/NAIVE_" +s;
-        try {
-            FileSystem hdfs = FileSystem.get(this.jsc.hadoopConfiguration());
-            Path path = new Path(outputPath);
-            if (hdfs.exists(path)) {
-                hdfs.delete(path, true);
-            }
-            clusters.forEach(
-                    c -> c.getPointsOfCluster().repartition(1).saveAsTextFile(outputPath + "_" + c.getId())
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        String outputPath = this.pathOutputFile + "/thirdQuery/NAIVE";
+        clusters.forEach(
+                c -> {
+                    try {
+                        FileSystem hdfs = FileSystem.get(this.jsc.hadoopConfiguration());
+                        Path path = new Path(outputPath + "_" + s + "_" + c.getId());
+                        if (hdfs.exists(path)) {
+                                hdfs.delete(path, true);
+                        }
+                        c.getPointsOfCluster().mapToPair(
+                                x -> new Tuple2(c.getId(), x)
+                        ).repartition(1).saveAsTextFile(outputPath + "_" + s + "_" + c.getId());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
     }
 
 
-    private boolean checkBreakCondition(Map<Integer,Double> oldMap, Map<Integer,Double> newMap){
-        final boolean[] overDelta = {false};
-        oldMap.forEach(
-                (id, centroidOld) ->  {
-                    double delta = Math.abs(newMap.get(id) - oldMap.get(id));
-                    overDelta[0] = (overDelta[0] || delta < this.EPSILON);
-                }
-        );
-        return overDelta[0];
-    }
 
 }
 
 
-//NOTA: senza early-stopping, max_iter = 10, naive == mlib circa. Dipende dal run. A SEED fissato sono differenti
