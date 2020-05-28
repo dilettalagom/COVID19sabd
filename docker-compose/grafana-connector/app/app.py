@@ -1,80 +1,52 @@
-from flask import Flask
-from flask import jsonify
-import formatterFirstQuery
-from cassandra.cluster import Cluster
-
-
+from flask import Flask, request, jsonify
+from flask import Response
 app = Flask(__name__)
 
+app.debug = True
 
 
-@app.route('/',methods=["GET"])
-def get_cassandra_connection():
-    #retrieve info
-    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
-    session = cluster.connect()
-    session.set_keyspace("covid19")
-    query1 = "SELECT * FROM query1_results"
-    rows = session.execute(query1)
-    f = formatterFirstQuery.formatterFirstQuery(rows).create_dict_complete(rows)
-    return f
+@app.route('/', methods=['GET'])
+def health_check():
+    return 'This datasource is healthy.',200
 
-    #df = pd.DataFrame(results)
+@app.route('/search', methods=['POST'])
+def search():
+    return Response("""["query1"]""", mimetype='application/json');
 
-    #keys = [d['text'] for d in data[0]['columns']]
-   #pd.DataFrame(data=data[0]['rows'], columns=keys)
+@app.route('/query', methods=['POST'])
+def query():
+    a =  """[
+      {
+        "columns":[
+          {"text":"Time","type":"time"},
+          {"text":"Country","type":"string"},
+          {"text":"Number","type":"number"}
+        ],
+        "rows":[
+          [1234567,"SE",123],
+          [1234567,"DE",231],
+          [1234567,"US",321]
+        ],
+        "type":"table"
+      }
+    ]"""
+    return Response(a, mimetype='application/json')
 
-    #return df.to_json()
-
-
-
-@app.route('/query/query1', methods=["GET"])
-def post_query1_results():
-    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
-    session = cluster.connect()
-    session.set_keyspace("covid19")
-    query1 = "SELECT * FROM query1_results"
-    results = session.execute(query1)
-    return results[0].week_year
-
-
-@app.route('/query/query2/top100', methods=["GET"])
-def post_query2_top100_results():
-    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
-    session = cluster.connect()
-    session.set_keyspace("covid19")
-    query1 = "SELECT * FROM query1_results"
-    results = session.execute(query1)
-    return jsonify(results)
-
-@app.route('/query/query2/result', methods=["GET"])
-def post_query2_results():
-    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
-    session = cluster.connect()
-    session.set_keyspace("covid19")
-    query1 = "SELECT json * FROM query2_results"
-    results = session.execute(query1)
-    return results
-
-@app.route('/query/query3/naive', methods=["GET"])
-def post_query3_naive_results():
-    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
-    session = cluster.connect()
-    session.set_keyspace("covid19")
-    query1 = "SELECT * FROM query1_results"
-    results = session.execute(query1)
-    return toJson(results)
+@app.route('/annotations', methods=["POST"])
+def annotations():
+    x = """[
+        {
+            "text": "text shown in body",
+            "title": "Annotation Title",
+            "isRegion": true,
+            "time": "timestamp",
+            "timeEnd": "timestamp",
+            "tags": ["tag1"]
+          }
+        ]"""
+    return Response(x, mimetype='application/json')
 
 
-@app.route('/query/query3/mllib', methods=["GET"])
-def post_query3_mllib_results():
-    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
-    session = cluster.connect()
-    session.set_keyspace("covid19")
-    query1 = "SELECT * FROM query1_results"
-    results = session.execute(query1)
-    return results[0].week_year
 
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+

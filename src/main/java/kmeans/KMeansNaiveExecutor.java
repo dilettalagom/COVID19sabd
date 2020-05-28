@@ -2,7 +2,6 @@ package kmeans;
 
 import kmeans.kmeansnaive.Cluster;
 import kmeans.kmeansnaive.Iteration;
-import lombok.Getter;
 import model.ClassificationMonthPojo;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -48,7 +47,7 @@ public class KMeansNaiveExecutor extends KMeansExecutor {
         int numIter = 0;
         while (numIter < this.MAX_ITER) {
 
-            this.currentIteration = new Iteration(initialClusters, this.EPSILON);
+            this.currentIteration = new Iteration(initialClusters);
 
             //fase 1: assegnazione dei punti ai cluster secondo distanza euclidea
             this.currentIteration.assignPointsToClusters(dataset);
@@ -61,7 +60,6 @@ public class KMeansNaiveExecutor extends KMeansExecutor {
             }
             initialClusters = currentIteration.getFinalClustersMap();
             numIter++;
-            System.out.println("CURRENT ITERATION " + numIter);
         }
         return currentIteration.getClusters();
     }
@@ -71,15 +69,11 @@ public class KMeansNaiveExecutor extends KMeansExecutor {
     public void starter(Map<String, JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo>> monthMap){
         monthMap.forEach((s, javaRDD) -> {
 
-            System.out.println("MESE CORRENTE =" + s);
-
             long startTime = System.nanoTime();
-
             List<Cluster> clusters = executeAlgorithm(javaRDD.values());
             long endTime = System.nanoTime();
             long convert = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
             System.out.println("Time elapsed : " + convert + "Iter " + s);
-
             printResults(clusters, s);
 
         });

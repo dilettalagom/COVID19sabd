@@ -7,8 +7,8 @@ import scala.Tuple2;
 import java.io.Serializable;
 import java.util.Map;
 
-public abstract class KMeansExecutor  implements Serializable {
 
+public abstract class KMeansExecutor  implements Serializable {
 
     int K;
     int MAX_ITER;

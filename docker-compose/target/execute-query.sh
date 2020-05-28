@@ -44,8 +44,10 @@ execute_query() {
 
     #show results in hdfs
     hdfs dfs -ls /results/firstQuery
-    hdfs dfs -cat /results/firstQuery/part-00000
-  
+
+
+
+
   elif [ $q = 2 ]
   then
     echo "\n--------------------< submitting QUERY 2 >--------------------"
@@ -54,13 +56,13 @@ execute_query() {
     $SPARK_HOME/bin/spark-submit \
     --class query.SecondQuery \
     --master "local" \
-    /target/jar/COVID19sabd-1.0-SNAPSHOT.jar --num-executors 1 --executor-cores 1 \
-    --conf "spark.executor.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=n,address=mbp-di-giorgia.homenet.telecomitalia.it:43211,suspend=y,onthrow=<FQ exception class name>,onuncaught=<y/n>"
-    
+    /target/jar/COVID19sabd-1.0-SNAPSHOT.jar
+
     #show results in hdfs
-    #hdfs dfs -ls /results/secondQuery
-    hdfs dfs -cat /results/secondQuery/part-00000 > result.csv
-    #hdfs dfs -cat /results/TOP100/part-00000 > top100.csv
+    hdfs dfs -ls /results/secondQuery
+
+
+
 
 
   elif [ $q = 3 ]
@@ -73,15 +75,6 @@ execute_query() {
     /target/jar/COVID19sabd-1.0-SNAPSHOT.jar $kmeans_type
 
     hdfs dfs -ls /results/thirdQuery
-    #hdfs dfs -cat /results/thirdQuery/part-00000 > query3.csv
-    hdfs dfs -ls /results/TOP50_*
-#    hdfs dfs -cat /results/kmeansmodel_1/part-00000 > kmeansmodel_1.csv
-#    hdfs dfs -cat /results/kmeansmodel_2/part-00000 > kmeansmodel_2.csv
-#    hdfs dfs -cat /results/kmeansmodel_3/part-00000 > kmeansmodel_3.csv
-#    hdfs dfs -cat /results/kmeansmodel_4/part-00000 > kmeansmodel_4.csv
-#    hdfs dfs -cat /results/kmeansmodel_5/part-00000 > kmeansmodel_5.csv
-    #hdfs dfs -cat /results/kmeansmodel_mlib/part-00000 > kmeansmodel_mlib.csv
-
 
   else
     wrong_query_name

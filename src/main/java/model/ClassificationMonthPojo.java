@@ -1,9 +1,9 @@
 package model;
 
 import lombok.Data;
-
 import java.io.Serializable;
 import java.util.Objects;
+
 
 @Data
 public class ClassificationMonthPojo implements Serializable, Comparable<ClassificationMonthPojo>{
@@ -49,6 +49,7 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
     public int hashCode() {
         return Objects.hash(trendMonth, monthYear, state, country);
     }
+
 
     @Override
     public String toString() {

@@ -3,7 +3,6 @@ package model;
 import lombok.Data;
 import lombok.ToString;
 import utility.regression.TrendCalculator;
-
 import java.io.Serializable;
 import java.util.Arrays;
 

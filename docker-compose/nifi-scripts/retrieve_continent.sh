@@ -9,9 +9,6 @@ import continetlib.retrieve_continent_lib as c
 
 # get input
 input = (sys.stdin).readline().replace('\n','')
-#remove comma between quotes
-input = re.sub(r'(")([^",]+),([^"]+)(")', r'\2 \3', input)
-#split
 line = input.split(',')
 
 # retrieve continent from class continentlib.Continent

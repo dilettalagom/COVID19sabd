@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
+
 public class KMeansMLibExecutor extends KMeansExecutor{
 
 
@@ -38,13 +39,10 @@ public class KMeansMLibExecutor extends KMeansExecutor{
                 x -> x
         );
         JavaPairRDD<Double,Integer> trendCluster = javaPairRDD.mapToPair(x -> new Tuple2(x._2(), x._1()));
-
         JavaPairRDD<Double, ClassificationMonthPojo> remappedPojo = originalData.mapToPair(
                 pojo -> new Tuple2<>(pojo.getTrendMonth(), pojo)
         );
-
         JavaPairRDD<Double, Tuple2<Integer, ClassificationMonthPojo>> join = trendCluster.join(remappedPojo);
-
         return join.mapToPair(x -> new Tuple2(x._2._1,x._2._2));
     }
 
@@ -66,16 +64,9 @@ public class KMeansMLibExecutor extends KMeansExecutor{
         for (Vector center : clusters.clusterCenters()) {
             System.out.println(" " + center);
         }
-        double cost = clusters.computeCost(vector.rdd());
-        System.out.println("Cost: " + cost);
-
-        // Evaluate clustering by computing Within Set Sum of Squared Errors
-        double WSSSE = clusters.computeCost(vector.rdd());
-        System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
 
         JavaPairRDD<Integer, ClassificationMonthPojo> resultClusters = getClustersAndPoints(vector, clusters, top50ForMonthAndTrend).distinct();
 
-        // Save and load model
         return resultClusters;
 
     }
@@ -85,20 +76,16 @@ public class KMeansMLibExecutor extends KMeansExecutor{
     public void starter(Map<String, JavaPairRDD<Tuple2<String,Double>, ClassificationMonthPojo>> monthMap){
         monthMap.forEach((s, javaRDD) -> {
 
-            //KMEANS MLIB
             long startTime = System.nanoTime();
             JavaPairRDD<Integer, ClassificationMonthPojo> kmeansRDD = executeAlgorithm(javaRDD.values());
-
             long endTime = System.nanoTime();
-
             long convert = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
             System.out.println("Time elapsed : " + convert);
-
             String mllibOutputPath = this.pathOutputFile +"/MLLIB/MLLIB_"+s;
-
             printResults(kmeansRDD, mllibOutputPath);
         });
     }
+
 
     public void printResults(JavaPairRDD<Integer, ClassificationMonthPojo> resultRDD, String outputPath) {
         try{

@@ -1,13 +1,11 @@
 package kmeans.kmeansnaive;
 
-import kmeans.KMeansNaiveExecutor;
 import lombok.Getter;
 import model.ClassificationMonthPojo;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import scala.Serializable;
 import scala.Tuple2;
-
 import java.util.*;
 
 
@@ -18,19 +16,20 @@ public class Iteration implements Serializable {
     @Getter
     public boolean atLeastOneCentroidHasMoved;
 
-    private double epsilon;
 
-    public Iteration(Map<Integer,Double> newValuesCluster, double epsilon) {
+    public Iteration(Map<Integer,Double> newValuesCluster) {
         this.clusters = initClusters(newValuesCluster);
-        this.epsilon = epsilon;
     }
+
+
 
     private List<Cluster> initClusters(Map<Integer,Double> newValuesCluster)
     {
         List<Cluster> clusters = new ArrayList<>();
-        newValuesCluster.forEach((clusterId, clusterCentroid) -> clusters.add(new Cluster(clusterId,clusterCentroid, epsilon)));
+        newValuesCluster.forEach((clusterId, clusterCentroid) -> clusters.add(new Cluster(clusterId,clusterCentroid)));
         return clusters;
     }
+
 
     //fase 1: assegno i punti ai cluster
     public void assignPointsToClusters(JavaRDD<ClassificationMonthPojo> pointsToAssign)
@@ -51,16 +50,19 @@ public class Iteration implements Serializable {
     }
 
 
+
     //fase 2
     public void recomputeCentroids(){
 
         clusters.forEach(
                 c -> {
                     c.relocateCentroid();
-                    this.atLeastOneCentroidHasMoved = (this.atLeastOneCentroidHasMoved || c.isCentroidMoved(this.epsilon));
+                    this.atLeastOneCentroidHasMoved = (this.atLeastOneCentroidHasMoved || c.isCentroidMoved());
                 }
         );
     }
+
+
 
     public Map<Integer,Double> getFinalClustersMap()
     {
@@ -70,6 +72,8 @@ public class Iteration implements Serializable {
         );
         return finalClusters;
     }
+
+
 
     private Cluster findClusterToAssing(Double point)
     {

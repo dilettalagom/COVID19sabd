@@ -39,7 +39,7 @@ public class NationalWeekKey implements Serializable, Comparable<NationalWeekKey
 
         DateTimeFormatter FMT = new DateTimeFormatterBuilder()
                 .append(DateTimeFormatter.ISO_LOCAL_DATE)
-                .optionalStart() //HERE WE INDICATE THAT THE TIME IS OPTIONAL
+                .optionalStart()
                 .appendLiteral('T')
                 .append(DateTimeFormatter.ISO_LOCAL_TIME)
                 .toFormatter();
@@ -48,16 +48,12 @@ public class NationalWeekKey implements Serializable, Comparable<NationalWeekKey
         return yw.toString();
     }
 
-    public static DateTime formatDate(String date){
-        return DateTime.parse(date,formatter);
-    }
-
-
 
     @Override
     public int compareTo(NationalWeekKey o) {
         return (this.WeekYear).compareTo(o.WeekYear);
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -67,16 +63,19 @@ public class NationalWeekKey implements Serializable, Comparable<NationalWeekKey
         return Objects.equals(WeekYear, that.WeekYear);
     }
 
+
     @Override
     public String toString() {
         return "dateStart = " + dateStart +
                 ", WeekYear = " + WeekYear;
     }
 
+
     @Override
     public int hashCode() {
         return Objects.hash(WeekYear);
     }
+
 
 
     public static String changeFormatDate(String dateInput) throws ParseException {

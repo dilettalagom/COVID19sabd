@@ -190,13 +190,15 @@ services:
 
 
   grafana:
-    image: grafana/grafana:6.5.1
+    image: grafana/grafana
     hostname: grafana
     container_name: grafana
     expose:
       - "3000"
     ports:
       - "3000:3000"
+    networks:
+      - app_network
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_INSTALL_PLUGINS=simpod-json-datasource

@@ -30,7 +30,6 @@ public class ClassificationWeekYearPojo implements Serializable {
         this.state = state;
         this.country = country;
         this.continent = continent;
-        //this.weekYear = "";
     }
 
 

@@ -7,7 +7,5 @@ datasources:
     editable: true
     is_default: true
     org_id: 1
-    url: 'http://localhost:5000'
+    url: 'http://grafana-cassandra-connector:5000'
     version: 1
-    jsonData:
-      timeInterval: "5s"

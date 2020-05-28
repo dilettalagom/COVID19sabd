@@ -16,12 +16,11 @@ import java.io.IOException;
 public class FirstQuery {
 
 
-    private static String datasetPath = "hdfs://master:54310/dataset/national_nifi_clean.csv";
+    private static String datasetPath = "hdfs://master:54310/dataset/covid19_national.csv";
     private static String resultFirstQueryPath =  "hdfs://master:54310/results/firstQuery";
 
 
     public static void main(String[] args) {
-
 
         SparkConf conf = new SparkConf()
                 .setMaster("local")
@@ -78,6 +77,8 @@ public class FirstQuery {
             e.printStackTrace();
         }
     }
+
+
 }
 
 

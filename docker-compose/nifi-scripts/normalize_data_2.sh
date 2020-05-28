@@ -16,18 +16,12 @@ sub = subset.to_numpy()
 
 # find indexes of elements not in monotonic order
 indexes_to_rectify = np.argwhere((sub[:, 1:] >= sub[:, :-1]) == False)
-#per sapere quante righe correggere eseguire  print(len(indexes_to_rectify))
 
 # substitute wrong element with mean of prev and next value
 for i in indexes_to_rectify:
     indexes_to_rectify_in_row = np.argwhere((sub[i[0], i[1]:] < sub[i[0], i[1]]) == True)
-
-    # finestra di numero di valori che accettiamo siano errati (come se fosse avvenuto un bitflip) = 10
-    #if len(indexes_to_rectify_in_row) <= 10:
     for j in indexes_to_rectify_in_row:
         sub[i[0], i[1] + j] = sub[i[0], i[1]]
-    #else:
-    #    print(len(indexes_to_rectify_in_row), all_line)
 
 # data normalization
 diff = np.diff(sub)
