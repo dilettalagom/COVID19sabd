@@ -3,7 +3,7 @@ CREATE KEYSPACE IF NOT EXISTS COVID19
 
 CREATE TABLE IF NOT EXISTS COVID19.QUERY1_RESULTS (
   week_year text,
-  datestart_week date,
+  datestart_week text,
   mean_healed double,
   mean_swabs double,
   PRIMARY KEY (week_year, datestart_week)

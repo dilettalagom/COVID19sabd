@@ -1,0 +1,13 @@
+apiVersion: 1
+
+datasources:
+  - name: 'cg-connector'
+    type: 'json'
+    access: 'proxy'
+    editable: true
+    is_default: true
+    org_id: 1
+    url: 'http://localhost:5000'
+    version: 1
+    jsonData:
+      timeInterval: "5s"

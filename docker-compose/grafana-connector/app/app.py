@@ -1,29 +1,79 @@
 from flask import Flask
-import cassandra
+from flask import jsonify
+import formatterFirstQuery
 from cassandra.cluster import Cluster
 
-app = Flask(__name__)
-query1 = "SELECT * FROM query1_results"
 
-def get_cassandra_connection(string_query):
+app = Flask(__name__)
+
+
+
+@app.route('/',methods=["GET"])
+def get_cassandra_connection():
+    #retrieve info
     cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
     session = cluster.connect()
-    session.set_keyspace('covid19')
-    results = session.execute(string_query)
+    session.set_keyspace("covid19")
+    query1 = "SELECT * FROM query1_results"
+    rows = session.execute(query1)
+    f = formatterFirstQuery.formatterFirstQuery(rows).create_dict_complete(rows)
+    return f
+
+    #df = pd.DataFrame(results)
+
+    #keys = [d['text'] for d in data[0]['columns']]
+   #pd.DataFrame(data=data[0]['rows'], columns=keys)
+
+    #return df.to_json()
+
+
+
+@app.route('/query/query1', methods=["GET"])
+def post_query1_results():
+    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
+    session = cluster.connect()
+    session.set_keyspace("covid19")
+    query1 = "SELECT * FROM query1_results"
+    results = session.execute(query1)
+    return results[0].week_year
+
+
+@app.route('/query/query2/top100', methods=["GET"])
+def post_query2_top100_results():
+    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
+    session = cluster.connect()
+    session.set_keyspace("covid19")
+    query1 = "SELECT * FROM query1_results"
+    results = session.execute(query1)
+    return jsonify(results)
+
+@app.route('/query/query2/result', methods=["GET"])
+def post_query2_results():
+    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
+    session = cluster.connect()
+    session.set_keyspace("covid19")
+    query1 = "SELECT json * FROM query2_results"
+    results = session.execute(query1)
     return results
 
-
-@app.route('/query1', methods=["POST"])
-def post_query1_results():
-    # get_query1_values
-    results_q1 = get_cassandra_connection(query1)
-    print(results_q1)
-
-    # convert to json
-
-    #send back to grafana
+@app.route('/query/query3/naive', methods=["GET"])
+def post_query3_naive_results():
+    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
+    session = cluster.connect()
+    session.set_keyspace("covid19")
+    query1 = "SELECT * FROM query1_results"
+    results = session.execute(query1)
+    return toJson(results)
 
 
+@app.route('/query/query3/mllib', methods=["GET"])
+def post_query3_mllib_results():
+    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
+    session = cluster.connect()
+    session.set_keyspace("covid19")
+    query1 = "SELECT * FROM query1_results"
+    results = session.execute(query1)
+    return results[0].week_year
 
 
 if __name__ == '__main__':

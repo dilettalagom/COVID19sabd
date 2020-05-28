@@ -11,7 +11,6 @@ RUN pip install pandas
 RUN pip install pycountry_convert
 RUN pip install scipy
 RUN pip install cassandra-driver
-#RUN pip install pyodbc
 
 
 #RUN wget https://mirror.nohup.it/apache/nifi/1.11.4/nifi-1.11.4-bin.tar.gz ; tar -zxf nifi-1.11.4-bin.tar.gz -C /usr/local/ ; rm nifi-1.11.4-bin.tar.gz
@@ -38,9 +37,9 @@ VOLUME $NIFI_HOME/data/nifi-scripts
 # import dataset from URL git
 WORKDIR $NIFI_HOME/data
 
-COPY requirement.txt /
-#TODO: RUN pip install -r requirement.txt
-
+#COPY nifi-configuration/requirement.txt $NIFI_HOME/data
+#RUN pip install -r ./requirement.txt
+#
 
 ENV URL_DATASET_ITA https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv
 ENV URL_DATASET_GLOBAL https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv

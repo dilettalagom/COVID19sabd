@@ -173,39 +173,35 @@ services:
       - "cassandra-seed"
     volumes:
       - ./cassandra-schemas:/opt/cassandra/schemas
-    #command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
 
 
+  grafana-cassandra-connector:
+    build:
+      context: ../docker-images/grafana-custom-connector
+    image: dilettalagom/cg-connector
+    container_name: grafana-cassandra-connector
+    hostname: grafana-cassandra-connector
+    ports:
+      - 8080:5000
+    networks:
+      - app_network
+    volumes:
+      - ./grafana-connector/app:/app
 
 
-
-#  grafana-cassandra-connector:
-#    build:
-#      context: ../docker-images/grafana-custom-connector
-#    image: dilettalagom/cg-connector
-#    container_name: grafana-cassandra-connector
-#    hostname: grafana-cassandra-connector
-#    ports:
-#      - 8080:5000
-#    networks:
-#      - app_network
-#    volumes:
-#      - ./grafana-connector/app:/app
-#
-#
-#  grafana:
-#    image: grafana/grafana:6.5.1
-#    hostname: grafana
-#    container_name: grafana
-#    expose:
-#      - "3000"
-#    ports:
-#      - "3000:3000"
-#    environment:
-#      - GF_AUTH_ANONYMOUS_ENABLED=true
-#      - GF_INSTALL_PLUGINS=simpod-json-datasource
-#    volumes:
-#      - "./grafana/provisioning/:/etc/grafana/provisioning/"
-#      - "./grafana/dashboard/:/var/lib/grafana/dashboards/"
-#      #- ./grafana/data/:/var/lib/grafana/
-#    mem_limit: 1G
+  grafana:
+    image: grafana/grafana:6.5.1
+    hostname: grafana
+    container_name: grafana
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_INSTALL_PLUGINS=simpod-json-datasource
+    volumes:
+      - "./grafana/provisioning/:/etc/grafana/provisioning/"
+      - "./grafana/dashboard/:/var/lib/grafana/dashboards/"
+      #- ./grafana/data/:/var/lib/grafana/
+    mem_limit: 1G
