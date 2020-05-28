@@ -3,8 +3,6 @@ USER root
 
 RUN apt-get update
 RUN apt-get install -y sudo wget openjdk-8-jre curl python2.7 python-pip vim
-#CASSANDRA DRIVER
-#RUN apt-get install unixodbc unixodbc-dev
 
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
@@ -32,21 +30,18 @@ RUN mkdir $NIFI_HOME/hdfs-configuration;
 ADD hdfs-configuration/core-site.xml $NIFI_HOME/hdfs-configuration
 ADD hdfs-configuration/hdfs-site.xml $NIFI_HOME/hdfs-configuration
 
-#add nifi-scripts for executeStreamCommand processors
+# add nifi-scripts for executeStreamCommand processors
 RUN mkdir $NIFI_HOME/data/nifi-scripts
 VOLUME $NIFI_HOME/data/nifi-scripts
 
-#TODO: check
-#VOLUME /data/results-uploader
-#
-##RUN mkdir /data/hbaseconf
-##ADD hbase-config/hbase-site.xml /data/hbaseconf/
-#
-##ADD nar/nifi-location-info-retriever-nar-1.0-SNAPSHOT.nar $NIFI_HOME/lib
-#
 
-#import dataset from URL git
+# import dataset from URL git
 WORKDIR $NIFI_HOME/data
+
+COPY requirement.txt /
+#TODO: RUN pip install -r requirement.txt
+
+
 ENV URL_DATASET_ITA https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv
 ENV URL_DATASET_GLOBAL https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv
 RUN wget $URL_DATASET_ITA; mv dpc-covid19-ita-andamento-nazionale.csv ./covid19_national.csv;

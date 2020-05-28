@@ -1,0 +1,5 @@
+numpy==
+pandas==
+scipy==
+pycountry_convert==
+cassandra-driver==3.23.0
