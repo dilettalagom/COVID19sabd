@@ -4,11 +4,6 @@ networks:
   app_network:
     driver: bridge
 
-#  cassandra_ring:
-#    driver: default
-#      #config:
-#      #  subnet: 172.30.0.0/16
-#      #  gateway: 172.30.0.1/16
 
 services:
 
@@ -81,154 +76,107 @@ services:
 #    tty: true
 #    command: bash -c "sh start-services.sh"
 
-  zookeeper:
-    image: wurstmeister/zookeeper
-    container_name: zookeeper
-    hostname: zookeeper
-    networks:
-      - app_network
-    ports:
-      - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-
-  nifi:
-    build:
-      context: ../docker-images/nifi-node
-    image: dilettalagom/nifi
-    container_name: nifi
-    depends_on:
-      - master
-    hostname: nifi
-    networks:
-      - app_network
-    volumes:
-      - ./nifi-flow:/usr/local/nifi-1.11.4/conf/flow
-      - ./nifi-scripts:/usr/local/nifi-1.11.4/data/nifi-scripts
-    ports:
-      - "4040:4040"
-      - "43212:43212"
-      - "43210:43210" #remote intellij degugging port
-    stdin_open: true
-    tty: true
+#  zookeeper:
+#    image: wurstmeister/zookeeper
+#    container_name: zookeeper
+#    hostname: zookeeper
+#    networks:
+#      - app_network
+#    ports:
+#      - '2181:2181'
+#    environment:
+#      - ALLOW_ANONYMOUS_LOGIN=yes
 #
-#
-#  cassandra1:
+#  nifi:
 #    build:
-#      context: ../docker-images/cassandra-node
-#    image: dilettalagom/cassandra
+#      context: ../docker-images/nifi-node
+#    image: dilettalagom/nifi
+#    container_name: nifi
+#    depends_on:
+#      - master
+#    hostname: nifi
+#    networks:
+#      - app_network
+#    volumes:
+#      - ./nifi-flow:/usr/local/nifi-1.11.4/conf/flow
+#      - ./nifi-scripts:/usr/local/nifi-1.11.4/data/nifi-scripts
+#    ports:
+#      - "4040:4040"
+#      - "43212:43212"
+#      - "43210:43210" #remote intellij degugging port
+#    stdin_open: true
+#    tty: true
+#
+#
+#  cassandra-seed:
+#    container_name: cassandra-seed-node
+#    image: cassandra:latest
+#    networks:
+#      - app_network
+#    ports:
+#      - "9042:9042"   # Native transport
+#      - "7199:7199"   # JMX
+#      - "9160:9160"   # Thrift clients
+#
+#  cassandra-node-1:
+#    image: cassandra:latest
+#    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
 #    container_name: cassandra1
 #    hostname: cassandra1
 #    networks:
 #      - app_network
-#      - cassandra_ring
-#    #      ipv4_address: 172.30.0.2
-#    #environment:
-#    volumes:
-#      - ./cassandra-schemas:/opt/cassandra/schemas
-#    ports:
-#    #      - "7199:7199" # JMX
-#    #      - "7000:7000" # cluster communication
-#    #      - "7001:7001" # cluster communication (SSL)
-#      - "9042" # native protocol clients : cqlsh
-#    #      - "9160:9160" # thrift clients
-#    stdin_open: true
-#    tty: true
-#
-#
-#  cassandra2:
-#    build:
-#      context: ../docker-images/cassandra-node
-#    image: dilettalagom/cassandra
-#    container_name: cassandra2
-#    hostname: cassandra2
-#    networks:
-#      - app_network
-#      - cassandra_ring
-#    links:
-#      - cassandra1:cassandra1
 #    environment:
-#     - CASSANDRA_SEEDS=cassandra1
-#    #      ipv4_address: 172.30.0.2
+#      #- "CLUSTER_NAME=COVID19"
+#      - "CASSANDRA_SEEDS=cassandra-seed-node"
+#    depends_on:
+#      - "cassandra-seed"
 #    volumes:
 #      - ./cassandra-schemas:/opt/cassandra/schemas
-#    ports:
-#    #      - "7199:7199" # JMX
-#    #      - "7000:7000" # cluster communication
-#    #      - "7001:7001" # cluster communication (SSL)
-#      - "9042" # native protocol clients : cqlsh
-#    #     # - "9160:9160" # thrift clients
-#    depends_on:
-#      - cassandra1
-#    stdin_open: true
-#    tty: true
+
+#    cassandra-node-2:
+#      image: cassandra:latest
+#      container_name: cassandra2
+#      hostname: cassandra2
+#      networks:
+#        - app_network
+#      command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
+#      environment:
+#        #- "CLUSTER_NAME=COVID19"
+#        - "CASSANDRA_SEEDS=cassandra-seed-node"
+#      depends_on:
+#        - "cassandra-seed"
+#      volumes:
+#        - ./cassandra-schemas:/opt/cassandra/schemas
 
 
-#  grafana:
-#    image: grafana/grafana:4.5.2
-#    env_file:
-#      - grafana/grafana.env
-#    links:
-#      - prometheus:prometheus
-#    ports:
-#      - "3000:3000"
-#    restart: always
-#    volumes:
-#      - ./data/grafana:/var/lib/grafana
-#
-  cassandra-seed:
-    container_name: cassandra-seed-node
-    image: cassandra:latest
-    networks:
-      - app_network
-    ports:
-      - "9042:9042"   # Native transport
-      - "7199:7199"   # JMX
-      - "9160:9160"   # Thrift clients
-
-  cassandra-node-1:
-    image: cassandra:latest
-    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
-    container_name: cassandra1
-    hostname: cassandra1
-    networks:
-      - app_network
-    environment:
-      #- "CLUSTER_NAME=COVID19"
-      - "CASSANDRA_SEEDS=cassandra-seed-node"
-    depends_on:
-      - "cassandra-seed"
-    volumes:
-      - ./cassandra-schemas:/opt/cassandra/schemas
-
-
-  cassandra-node-2:
-    image: cassandra:latest
-    container_name: cassandra2
-    hostname: cassandra2
-    networks:
-      - app_network
-    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 80 && /docker-entrypoint.sh cassandra -f"
-    environment:
-      #- "CLUSTER_NAME=COVID19"
-      - "CASSANDRA_SEEDS=cassandra-seed-node"
-    depends_on:
-      - "cassandra-seed"
-    volumes:
-      - ./cassandra-schemas:/opt/cassandra/schemas
-
-
-#  graphana-cassandra-connector:
+#  grafana-cassandra-connector:
 #    build:
-#      context: ../docker-images/graphana-custom-connector
+#      context: ../docker-images/grafana-custom-connector
 #    image: dilettalagom/cg-connector
-#    container_name: graphana-cassandra-connector
-#    hostname: graphana-cassandra-connector
+#    container_name: grafana-cassandra-connector
+#    hostname: grafana-cassandra-connector
 #    ports:
 #      - 8080:5000
 #    networks:
 #      - app_network
 #    volumes:
-#    - ./grafana-connector/app:/app
-
-
+#      - ./grafana-connector/app:/app
+#
+#
+#  grafana:
+#    image: grafana/grafana:6.5.1
+#    hostname: grafana
+#    container_name: grafana
+#    expose:
+#      - "3000"
+#    ports:
+#      - "3000:3000"
+#    environment:
+#      - GF_AUTH_ANONYMOUS_ENABLED=true
+#      - GF_INSTALL_PLUGINS=simpod-json-datasource
+#    volumes:
+#      - "./grafana/provisioning/:/etc/grafana/provisioning/"
+#      - "./grafana/dashboard/:/var/lib/grafana/dashboards/"
+#      #- ./grafana/data/:/var/lib/grafana/
+#    mem_limit: 1G
+    #command:  bash -c "grafana-cli plugins install simpod-json-datasource"
