@@ -43,71 +43,71 @@ services:
     tty: true
     command: bash -c "sh start-services.sh"
 
-#
-#  worker2:
-#    image: dilettalagom/spark-hdfs-node
-#    container_name: worker2
-#    hostname: worker2
-#    networks:
-#      - app_network
-#    ports:
-#      - "9862:9861"
-#    depends_on:
-#      - master
-#    volumes:
-#      - ./target:/target
-#    stdin_open: true
-#    tty: true
-#    command: bash -c "sh start-services.sh"
-#
-#  worker3:
-#    image: dilettalagom/spark-hdfs-node
-#    container_name: worker3
-#    hostname: worker3
-#    networks:
-#      - app_network
-#    ports:
-#      - "9863:9861"
-#    depends_on:
-#      - master
-#    volumes:
-#      - ./target:/target
-#    stdin_open: true
-#    tty: true
-#    command: bash -c "sh start-services.sh"
 
-#  zookeeper:
-#    image: wurstmeister/zookeeper
-#    container_name: zookeeper
-#    hostname: zookeeper
-#    networks:
-#      - app_network
-#    ports:
-#      - '2181:2181'
-#    environment:
-#      - ALLOW_ANONYMOUS_LOGIN=yes
-#
-#  nifi:
-#    build:
-#      context: ../docker-images/nifi-node
-#    image: dilettalagom/nifi
-#    container_name: nifi
-#    depends_on:
-#      - master
-#    hostname: nifi
-#    networks:
-#      - app_network
-#    volumes:
-#      - ./nifi-flow:/usr/local/nifi-1.11.4/conf/flow
-#      - ./nifi-scripts:/usr/local/nifi-1.11.4/data/nifi-scripts
-#    ports:
-#      - "4040:4040"
-#      - "43212:43212"
-#      - "43210:43210" #remote intellij degugging port
-#    stdin_open: true
-#    tty: true
-#
-#
+  worker2:
+    image: dilettalagom/spark-hdfs-node
+    container_name: worker2
+    hostname: worker2
+    networks:
+      - app_network
+    ports:
+      - "9862:9861"
+    depends_on:
+      - master
+    volumes:
+      - ./target:/target
+    stdin_open: true
+    tty: true
+    command: bash -c "sh start-services.sh"
+
+  worker3:
+    image: dilettalagom/spark-hdfs-node
+    container_name: worker3
+    hostname: worker3
+    networks:
+      - app_network
+    ports:
+      - "9863:9861"
+    depends_on:
+      - master
+    volumes:
+      - ./target:/target
+    stdin_open: true
+    tty: true
+    command: bash -c "sh start-services.sh"
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    hostname: zookeeper
+    networks:
+      - app_network
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  nifi:
+    build:
+      context: ../docker-images/nifi-node
+    image: dilettalagom/nifi
+    container_name: nifi
+    depends_on:
+      - master
+    hostname: nifi
+    networks:
+      - app_network
+    volumes:
+      - ./nifi-flow:/usr/local/nifi-1.11.4/conf/flow
+      - ./nifi-scripts:/usr/local/nifi-1.11.4/data/nifi-scripts
+    ports:
+      - "4040:4040"
+      - "43212:43212"
+      - "43210:43210" #remote intellij degugging port
+    stdin_open: true
+    tty: true
+
+#TODO: versione 27.05.20
 #  cassandra-seed:
 #    container_name: cassandra-seed-node
 #    image: cassandra:latest
@@ -126,13 +126,13 @@ services:
 #    networks:
 #      - app_network
 #    environment:
-#      #- "CLUSTER_NAME=COVID19"
+#      - "CLUSTER_NAME=COVID19"
 #      - "CASSANDRA_SEEDS=cassandra-seed-node"
 #    depends_on:
 #      - "cassandra-seed"
 #    volumes:
 #      - ./cassandra-schemas:/opt/cassandra/schemas
-
+#
 #    cassandra-node-2:
 #      image: cassandra:latest
 #      container_name: cassandra2
@@ -147,6 +147,36 @@ services:
 #        - "cassandra-seed"
 #      volumes:
 #        - ./cassandra-schemas:/opt/cassandra/schemas
+
+  cassandra-seed:
+    image: cassandra:latest
+    container_name: cassandra-seed-node
+    networks:
+      - app_network
+    ports:
+      - "9042:9042"   # Native transport
+      - "7199:7199"   # JMX
+      - "9160:9160"   # Thrift clients
+
+  cassandra-node-1:
+    build:
+      context: ../docker-images/cassandra-node
+    image: dilettalagom/cassandra
+    container_name: cassandra1
+    hostname: cassandra1
+    networks:
+      - app_network
+    environment:
+      - "CLUSTER_NAME=COVID19"
+      - "CASSANDRA_SEEDS=cassandra-seed-node"
+    depends_on:
+      - "cassandra-seed"
+    volumes:
+      - ./cassandra-schemas:/opt/cassandra/schemas
+    #command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
+
+
+
 
 
 #  grafana-cassandra-connector:
@@ -179,4 +209,3 @@ services:
 #      - "./grafana/dashboard/:/var/lib/grafana/dashboards/"
 #      #- ./grafana/data/:/var/lib/grafana/
 #    mem_limit: 1G
-    #command:  bash -c "grafana-cli plugins install simpod-json-datasource"
