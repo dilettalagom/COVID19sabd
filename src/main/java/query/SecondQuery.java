@@ -27,7 +27,7 @@ public class SecondQuery {
 
 
     private static String datasetPath = "hdfs://master:54310/dataset/covid19_global.csv";
-    private static String resultSecondQueryPath = "hdfs://master:54310/results";
+    private static String resultSecondQueryPath = "hdfs://master:54310/results/secondQuery";
 
     public static void main(String[] args) {
 
@@ -125,9 +125,9 @@ public class SecondQuery {
             if (hdfs.exists(path)) {
                 hdfs.delete(path, true);
             }
-            statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery");
+            statisticsGlobalRDD.repartition(1).saveAsTextFile(resultSecondQueryPath);
             JavaRDD<ClassificationWeekYearPojo> res = top100RDD.map(x -> x._1());
-            res.repartition(1).saveAsTextFile(resultSecondQueryPath+"/secondQuery/TOP100");
+            res.repartition(1).saveAsTextFile(resultSecondQueryPath+"/TOP100");
             context.close();
         } catch (IOException e) {
             e.printStackTrace();

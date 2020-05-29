@@ -18,6 +18,6 @@ VOLUME $CASSANDRA_HOME/schemas
 WORKDIR $CASSANDRA_HOME/schemas
 #RUN cqlsh -f COVID19schema.cql
 
-CMD sh ./start-services.sh
+#CMD sh ./start-services.sh
 EXPOSE 7199 7000 7001 9042 9160
 

@@ -107,46 +107,6 @@ services:
     stdin_open: true
     tty: true
 
-#TODO: versione 27.05.20
-#  cassandra-seed:
-#    container_name: cassandra-seed-node
-#    image: cassandra:latest
-#    networks:
-#      - app_network
-#    ports:
-#      - "9042:9042"   # Native transport
-#      - "7199:7199"   # JMX
-#      - "9160:9160"   # Thrift clients
-#
-#  cassandra-node-1:
-#    image: cassandra:latest
-#    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
-#    container_name: cassandra1
-#    hostname: cassandra1
-#    networks:
-#      - app_network
-#    environment:
-#      - "CLUSTER_NAME=COVID19"
-#      - "CASSANDRA_SEEDS=cassandra-seed-node"
-#    depends_on:
-#      - "cassandra-seed"
-#    volumes:
-#      - ./cassandra-schemas:/opt/cassandra/schemas
-#
-#    cassandra-node-2:
-#      image: cassandra:latest
-#      container_name: cassandra2
-#      hostname: cassandra2
-#      networks:
-#        - app_network
-#      command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
-#      environment:
-#        #- "CLUSTER_NAME=COVID19"
-#        - "CASSANDRA_SEEDS=cassandra-seed-node"
-#      depends_on:
-#        - "cassandra-seed"
-#      volumes:
-#        - ./cassandra-schemas:/opt/cassandra/schemas
 
   cassandra-seed:
     image: cassandra:latest
@@ -167,12 +127,29 @@ services:
     networks:
       - app_network
     environment:
-      - "CLUSTER_NAME=COVID19"
       - "CASSANDRA_SEEDS=cassandra-seed-node"
     depends_on:
       - "cassandra-seed"
     volumes:
       - ./cassandra-schemas:/opt/cassandra/schemas
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
+
+
+  cassandra-node-2:
+    build:
+      context: ../docker-images/cassandra-node
+    image: dilettalagom/cassandra
+    container_name: cassandra2
+    hostname: cassandra2
+    networks:
+      - app_network
+    environment:
+      - "CASSANDRA_SEEDS=cassandra-seed-node"
+    depends_on:
+      - "cassandra-seed"
+    volumes:
+      - ./cassandra-schemas:/opt/cassandra/schemas
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 80 && /docker-entrypoint.sh cassandra -f"
 
 
   grafana-cassandra-connector:

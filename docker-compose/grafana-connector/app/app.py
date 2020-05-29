@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask import Response
+import formatterFirstQuery
 app = Flask(__name__)
 
 app.debug = True
@@ -15,22 +16,13 @@ def search():
 
 @app.route('/query', methods=['POST'])
 def query():
-    a =  """[
-      {
-        "columns":[
-          {"text":"Time","type":"time"},
-          {"text":"Country","type":"string"},
-          {"text":"Number","type":"number"}
-        ],
-        "rows":[
-          [1234567,"SE",123],
-          [1234567,"DE",231],
-          [1234567,"US",321]
-        ],
-        "type":"table"
-      }
-    ]"""
-    return Response(a, mimetype='application/json')
+    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
+    session = cluster.connect()
+    session.set_keyspace("covid19")
+    query1 = "SELECT * FROM query1_results"
+    rows = session.execute(query1)
+    f = formatterFirstQuery.formatterFirstQuery(rows).create_dict_complete(rows)
+    return Response(f, mimetype='application/json')
 
 @app.route('/annotations', methods=["POST"])
 def annotations():

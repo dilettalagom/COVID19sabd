@@ -29,7 +29,7 @@ public class ThirdQuery {
 
         SparkConf conf = new SparkConf()
                 .setMaster("local")
-                .setAppName("SecondQuery");
+                .setAppName("ThirdQuery");
         JavaSparkContext context = new JavaSparkContext(conf);
 
 
