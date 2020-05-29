@@ -11,7 +11,8 @@ RUN pip install pycountry_convert
 RUN pip install scipy
 RUN pip install cassandra-driver
 
-ADD nifi-configuration/nifi-1.11.4-bin.tar.gz /usr/local/
+#ADD nifi-configuration/nifi-1.11.4-bin.tar.gz /usr/local/
+RUN wget https://mirror.nohup.it/apache/nifi/1.11.4/nifi-1.11.4-bin.tar.gz /usr/local/
 ADD nifi-configuration/start-services.sh /usr/local/
 ENV NIFI_HOME /usr/local/nifi-1.11.4
 ENV NIFI_FLOW_DIR $NIFI_HOME/conf/flow/

@@ -3,7 +3,7 @@ USER root
 
 RUN apt-get update;
 
-# HDFS CONFIG FILES #TODO: misos mapred-site.xml -> config file for master-worker interconnection
+# HDFS CONFIG FILES
 ADD hdfs-configuration/core-site.xml $HADOOP_CONF_DIR/core-site.xml
 ADD hdfs-configuration/hadoop-env.sh $HADOOP_CONF_DIR/hadoop-env.sh
 ADD hdfs-configuration/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml
