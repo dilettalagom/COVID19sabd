@@ -135,6 +135,7 @@ services:
     command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
 
 
+# tolto per mancanza di risorse
 #  cassandra-node-2:
 #    build:
 #      context: ../docker-images/cassandra-node
@@ -182,5 +183,4 @@ services:
     volumes:
       - "./grafana/provisioning/:/etc/grafana/provisioning/"
       - "./grafana/dashboard/:/var/lib/grafana/dashboards/"
-      #- ./grafana/data/:/var/lib/grafana/
     mem_limit: 1G

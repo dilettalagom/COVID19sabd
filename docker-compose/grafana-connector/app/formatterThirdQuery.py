@@ -1,22 +1,30 @@
-class formatterFirstQuery():
+import reverse_geocode
+import time
+import datetime
+
+class formatterThirdQuery():
 
     def __init__(self, result_set):
         self.dict_columns = []
-        self.dict_rows = []
-        self.dict_complete = {}
+
 
     def create_column_dict(self):
-        list_column = [{"text": "week_year", "type": "string"}.copy(),
-                       {"text": "datestart_week", "type": "string"}.copy(),
-                       {"text": "mean_healed", "type": "number"}.copy(),
-                       {"text": "mean_swabs", "type": "number"}.copy()]
+        list_column = [{"text": "month_year", "type": "string"}.copy(),
+                   {"text": "cluster_id", "type": "number"}.copy(),
+                   {"text": "country", "type": "string"}.copy(),
+                   {"text": "state", "type": "string"}.copy(),
+                   {"text": "trend", "type": "number"}.copy(),
+                   {"text": "lat", "type": "number"}.copy(),
+                   {"text": "log", "type": "number"}.copy()]
         return list_column
+
 
     def create_row_dict(self, result_set):
         list_row = []
         for row in result_set:
             list_row.append(row)
         return list_row
+
 
     def create_dict_complete(self, result_set):
         a = self.create_column_dict()
@@ -25,3 +33,4 @@ class formatterFirstQuery():
         list_res = []
         list_res.append(dict.copy())
         return  list_res
+
