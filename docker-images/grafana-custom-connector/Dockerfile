@@ -6,6 +6,9 @@ RUN apt-get install -y sudo wget python2.7 python-pip vim
 RUN pip install pandas
 RUN pip install cassandra-driver
 RUN pip install flask
+RUN pip install pycountry_convert
+RUN pip install reverse_geocode
+
 
 ENV FLASK_APP app.py
 ENV FLASK_ENV development

@@ -11,27 +11,35 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
     String monthYear;
     String state;
     String country;
+    double lat;
+    double lon;
     double trendMonth;
     int index;
 
 
-    public ClassificationMonthPojo(String state, String country) {
+    public ClassificationMonthPojo(String state, String country, double lat, double lon) {
         this.state = state;
         this.country = country;
+        this.lat = lat;
+        this.lon = lon;
     }
 
 
-    public ClassificationMonthPojo(String state, String country,String monthYear) {
+    public ClassificationMonthPojo(String state, String country,String monthYear,double lat, double lon) {
         this.monthYear = monthYear;
         this.state = state;
         this.country = country;
+        this.lat = lat;
+        this.lon = lon;
     }
 
-    public ClassificationMonthPojo(String monthYear, String state, String country, double trendMonth) {
+    public ClassificationMonthPojo(String monthYear, String state, String country, double trendMonth, double lat, double lon) {
         this.monthYear = monthYear;
         this.state = state;
         this.country = country;
         this.trendMonth = trendMonth;
+        this.lat = lat;
+        this.lon = lon;
     }
 
     @Override
@@ -53,10 +61,12 @@ public class ClassificationMonthPojo implements Serializable, Comparable<Classif
 
     @Override
     public String toString() {
-        return "trendMonth = " + trendMonth + '\'' +
-                ", state = '" + state + '\'' +
-                ", country = '" + country + '\'' +
-                ", monthYear = '" + monthYear;
+        return "trendMonth = " + trendMonth +
+                ", state = " + state +
+                ", country = " + country +
+                ", monthYear = " + monthYear +
+                ", lat = " + lat +
+                ", lon = " + lon ;
     }
 
     @Override
