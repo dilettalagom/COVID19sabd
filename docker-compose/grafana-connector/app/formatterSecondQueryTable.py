@@ -1,4 +1,4 @@
-class formatterFirstQuery():
+class formatterSecondQueryTable():
 
     def __init__(self, result_set):
         self.dict_columns = []
@@ -8,8 +8,11 @@ class formatterFirstQuery():
     def create_column_dict(self):
         list_column = [{"text": "week_year", "type": "string"}.copy(),
                        {"text": "datestart_week", "type": "string"}.copy(),
-                       {"text": "mean_healed", "type": "number"}.copy(),
-                       {"text": "mean_swabs", "type": "number"}.copy()]
+                       {"text": "continent", "type": "string"}.copy(),
+                       {"text": "mean_confirmed_cases", "type": "number"}.copy(),
+                       {"text": "dev_std_confirmed_cases", "type": "number"}.copy(),
+                       {"text": "min_confirmed_cases", "type": "number"}.copy(),
+                       {"text": "max_confirmed_cases", "type": "number"}.copy()]
         return list_column
 
     def create_row_dict(self, result_set):

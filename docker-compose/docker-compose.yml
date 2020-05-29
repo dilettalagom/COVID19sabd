@@ -159,7 +159,7 @@ services:
     container_name: grafana-cassandra-connector
     hostname: grafana-cassandra-connector
     ports:
-      - 8080:5000
+      - 8080:5000 
     networks:
       - app_network
     volumes:
@@ -178,7 +178,7 @@ services:
       - app_network
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_INSTALL_PLUGINS=simpod-json-datasource
+      - GF_INSTALL_PLUGINS=simpod-json-datasource,grafana-worldmap-panel
     volumes:
       - "./grafana/provisioning/:/etc/grafana/provisioning/"
       - "./grafana/dashboard/:/var/lib/grafana/dashboards/"

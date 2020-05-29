@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask import jsonify
 from cassandra.cluster import Cluster
 from flask import Response
-import formatterSecondQueryTable
+import formatterFirstQuery
 app = Flask(__name__)
 
 app.debug = True
@@ -21,9 +21,9 @@ def query():
     cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
     session = cluster.connect()
     session.set_keyspace("covid19")
-    query1 = "SELECT * FROM query2_results"
+    query1 = "SELECT * FROM query1_results"
     rows = session.execute(query1)
-    f = formatterSecondQueryTable.formatterSecondQueryTable(rows).create_dict_complete(rows)
+    f = formatterFirstQuery.formatterFirstQuery(rows).create_dict_complete(rows)
     return jsonify(f)
 
 @app.route('/annotations', methods=["POST"])
@@ -39,3 +39,8 @@ def annotations():
           }
         ]"""
     return Response(x, mimetype='application/json')
+
+
+
+
+
