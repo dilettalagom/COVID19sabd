@@ -45,10 +45,12 @@ public class ThirdQuery {
                     String[] lineSplitted = line.split(",");
                     String state = lineSplitted[0];
                     String country = lineSplitted[1];
+                    double lat = Double.parseDouble(lineSplitted[2]);
+                    double lon = Double.parseDouble(lineSplitted[3]);
                     String continent = lineSplitted[4];
                     String[] infectedString = Arrays.copyOfRange(lineSplitted, 5, lineSplitted.length);
                     GlobalStatisticsPojo pojo = new GlobalStatisticsPojo(state, country, continent, infectedString, dates);
-                    ClassificationMonthPojo key = new ClassificationMonthPojo(state, country);
+                    ClassificationMonthPojo key = new ClassificationMonthPojo(state, country,lat,lon);
                     return new Tuple2(key, pojo);
                 }).cache();
 
@@ -70,7 +72,7 @@ public class ThirdQuery {
                         for (int i=0; i<allInfected.length;i++ ) {
                             String dateString  = tuplaRDD._2().getInfectedDates()[i];
                             String monthYear = CalendarUtility.createKeyYearMonth(dateString);
-                            ClassificationMonthPojo newOne = new ClassificationMonthPojo(tuplaRDD._1().getState(), tuplaRDD._1().getCountry(),monthYear);
+                            ClassificationMonthPojo newOne = new ClassificationMonthPojo(tuplaRDD._1().getState(), tuplaRDD._1().getCountry(),monthYear,tuplaRDD._1().getLat(),tuplaRDD._1().getLon());
                             //refactor RDD elements
                             Tuple2<ClassificationMonthPojo, Tuple2<String,Double>> temp = new Tuple2<>(newOne, new Tuple2<>( dateString, allInfected[i] ));
                             tupleList.add(temp);
@@ -92,7 +94,7 @@ public class ThirdQuery {
                             }
 
                             double trendCoefficient = TrendCalculator.getInstance().getTrendCoefficient(y);
-                            ClassificationMonthPojo pojo = new ClassificationMonthPojo(x._1.getMonthYear(), x._1.getState(), x._1.getCountry(), trendCoefficient);
+                            ClassificationMonthPojo pojo = new ClassificationMonthPojo(x._1.getMonthYear(), x._1.getState(), x._1.getCountry(), trendCoefficient,x._1.getLat(),x._1.getLon());
                             return new Tuple2(new Tuple2(pojo.getMonthYear(),trendCoefficient),pojo);
                         }
                 );

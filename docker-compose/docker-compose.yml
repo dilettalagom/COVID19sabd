@@ -135,21 +135,21 @@ services:
     command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
 
 
-  cassandra-node-2:
-    build:
-      context: ../docker-images/cassandra-node
-    image: dilettalagom/cassandra
-    container_name: cassandra2
-    hostname: cassandra2
-    networks:
-      - app_network
-    environment:
-      - "CASSANDRA_SEEDS=cassandra-seed-node"
-    depends_on:
-      - "cassandra-seed"
-    volumes:
-      - ./cassandra-schemas:/opt/cassandra/schemas
-    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 80 && /docker-entrypoint.sh cassandra -f"
+#  cassandra-node-2:
+#    build:
+#      context: ../docker-images/cassandra-node
+#    image: dilettalagom/cassandra
+#    container_name: cassandra2
+#    hostname: cassandra2
+#    networks:
+#      - app_network
+#    environment:
+#      - "CASSANDRA_SEEDS=cassandra-seed-node"
+#    depends_on:
+#      - "cassandra-seed"
+#    volumes:
+#      - ./cassandra-schemas:/opt/cassandra/schemas
+#    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 80 && /docker-entrypoint.sh cassandra -f"
 
 
   grafana-cassandra-connector:
@@ -159,7 +159,7 @@ services:
     container_name: grafana-cassandra-connector
     hostname: grafana-cassandra-connector
     ports:
-      - 8080:5000 
+      - 8080:5000
     networks:
       - app_network
     volumes:
