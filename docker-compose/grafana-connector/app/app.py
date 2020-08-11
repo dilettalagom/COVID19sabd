@@ -4,20 +4,23 @@ from cassandra.cluster import Cluster
 from flask import Response
 from flask import request
 import formatterFirstQueryTS
-import formatterThirdQuery
+import formatterThirdQueryMap
 import formatterSecondQueryTable
 import sys
+import json
+from flask_cors import CORS
+
 sys.path.append('/usr/local/lib/python2.7/dist-packages')
 
 
 app = Flask(__name__)
-
+CORS(app)
 app.debug = True
 
 
 @app.route('/', methods=['GET'])
 def health_check():
-    return 'This datasource is healthy.',200
+    return 'This datasource is healthy',200
 
 
 
@@ -33,7 +36,8 @@ def query():
     session = cluster.connect()
     session.set_keyspace("covid19")
     r = request.json
-    app.logger.info(r)
+
+    #'data': {u'anno': u'2020', u'mese': u'01'}
     requested_query = r["targets"][0]
     if('target' not in requested_query):
         return jsonify([])
@@ -47,12 +51,23 @@ def query():
             rows = session.execute(query2)
             f = formatterSecondQueryTable.formatterSecondQueryTable(rows).create_dict_complete(rows)
         elif requested_query['target'] == 'query3':
-            query3 = "SELECT * FROM query3_kmeans_naive_results"
+            data = requested_query["data"]
+            app.logger.info(data)
+            query3 = "select * from query3_kmeans_naive_results where month_year = '{}-{}' ALLOW FILTERING ".format(data["anno"],data["mese"])
             rows = session.execute(query3)
-            f = formatterThirdQuery.formatterThirdQuery(rows).create_dict_complete(rows)
+            f = formatterThirdQueryMap.formatterThirdQueryMap(rows).get_target_content(rows)
     return jsonify(f)
 
 
+@app.route('/geo', methods=['GET'],)
+def geo():
+    cluster = Cluster(["cassandra1", "cassandra2","cassandra-seed-node"])
+    session = cluster.connect()
+    session.set_keyspace("covid19")
+    query3 = "SELECT * FROM query3_kmeans_naive_results"
+    rows = session.execute(query3)
+    f = formatterThirdQueryMap.formatterThirdQueryMap(rows).get_location_content(rows)
+    return jsonify(f)
 
 @app.route('/annotations', methods=["POST"])
 def annotations():

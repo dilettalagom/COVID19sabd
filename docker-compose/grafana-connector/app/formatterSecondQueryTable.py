@@ -6,9 +6,10 @@ class formatterSecondQueryTable():
         self.dict_complete = {}
 
     def create_column_dict(self):
-        list_column = [{"text": "week_year", "type": "string"}.copy(),
-                       {"text": "datestart_week", "type": "string"}.copy(),
+        list_column = [
                        {"text": "continent", "type": "string"}.copy(),
+                       {"text": "week_year", "type": "string"}.copy(),
+                       {"text": "datestart_week", "type": "string"}.copy(),
                        {"text": "mean_confirmed_cases", "type": "number"}.copy(),
                        {"text": "dev_std_confirmed_cases", "type": "number"}.copy(),
                        {"text": "min_confirmed_cases", "type": "number"}.copy(),

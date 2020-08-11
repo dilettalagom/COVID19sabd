@@ -18,4 +18,4 @@ with sys.stdin as csvfile:
         trend = float(row[1])
         lat = float(row[5])
         lon = float(row[6])
-        session.execute_async("INSERT INTO QUERY3_KMEANS_NAIVE_RESULTS (cluster_id, month_year, trend, state, country,lat, lon) VALUES (%s,%s,%s,%s,%s,%s,%s)", (cluster_id, row[4], trend, row[2], row[3],lat, lon))
+        session.execute("INSERT INTO QUERY3_KMEANS_NAIVE_RESULTS (cluster_id, month_year, trend, state, country,lat, lon) VALUES (%s,%s,%s,%s,%s,%s,%s)", (cluster_id, row[4], trend, row[2], row[3],lat, lon))
